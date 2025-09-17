@@ -161,7 +161,7 @@ function draw() {
 	// Check collision obstacles
 	for (const o of obstacles) {
 		if (player.overlaps(o)) {
-			const nextEnergy = Math.round(random(-3, -1));
+			const nextEnergy = Math.round(random(-10, -1));
 			const dir = Math.round(random([-1, 1]));
 
 			const expiration = frameCount + 60 * 3; // durée d’affichage du message
@@ -183,7 +183,7 @@ function draw() {
 			// Exemple : changer la couleur du player
 			if (shouldFight) fight = true;
 			else if (catched) {
-				const nextEnergy = Math.round(random(1, 3));
+				const nextEnergy = Math.round(random(1, 5));
 				const dir = Math.round(random([-1, 1]));
 
 				const expiration = frameCount + 60 * 3; // durée d’affichage du message
