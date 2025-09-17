@@ -4,6 +4,7 @@ let gameOver = false;
 let jump = false;
 let bodyPose;
 let poses = [];
+let playerImg, groundImg;
 
 const size = {
 	width: 640,
@@ -17,11 +18,14 @@ console.log("ml5 version:", ml5.version);
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
+	playerImg = loadImage("assets/giraffe.png");
+	groundImg = loadImage("assets/ground.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
 	new Canvas(size.width, size.height);
+	noSmooth();
 
 	video = createCapture(VIDEO);
 	video.size(size.width, size.height);
@@ -29,33 +33,32 @@ function setup() {
 	bodyPose.detectStart(video, gotPoses);
 
 	// World
-	world.gravity.y = 22;
+	world.gravity.y = 40;
 
 	// Player
 	player = new Sprite(120, height - 160, 40, 60);
-	player.color = "gold";
+	player.image = playerImg;
 	player.rotationLock = true;
 	player.friction = 0;
-	player.vel.x = 6; // vitesse constante (runner)
+	player.vel.x = 6;
 
 	// Grounds
 	grounds = new Group();
+	grounds.image = groundImg;
 	grounds.collider = "static";
-	grounds.color = "darkgreen";
-	grounds.h = 40;
-	grounds.w = 600;
+	grounds.color = "green";
+	grounds.w = 200;
+	grounds.h = 75;
 
 	// 3 segments de sol pour boucler
-	const groundY = height - 40 / 2;
-	for (let i = 0; i < 3; i++) {
-		new grounds.Sprite(i * grounds.w + grounds.w / 2, groundY);
-	}
+	const groundY = height - grounds.h / 2;
+	for (let i = 0; i < 3; i++) new grounds.Sprite(i * grounds.w, groundY);
 
 	// Obstacles
 	obstacles = new Group();
 	obstacles.collider = "static";
-	obstacles.w = 34;
-	obstacles.h = 48;
+	obstacles.w = 20;
+	obstacles.h = 40;
 	obstacles.color = "tomato";
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
@@ -67,12 +70,14 @@ function draw() {
 	background("#87CEEB");
 
 	if (gameOver) {
+		camera.off();
 		background(10);
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(28);
 		text("Game Over\nClick or press [R] to restart", camera.x, camera.y);
 		if (mouse.presses() || kb.presses("r")) restart();
+		camera.on();
 		return;
 	}
 
