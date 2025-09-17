@@ -158,10 +158,12 @@ function draw() {
 	if (win) {
 		camera.off();
 		background("lightgreen");
+		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("YOU WIN!", width / 2, height / 2);
+		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -170,11 +172,13 @@ function draw() {
 	if (fight) {
 		camera.off();
 		background("red");
+		noStroke();
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("FIGHT!", width / 2, height / 2);
-		if (mouse.presses() || kb.presses("r")) restart();
+		player.vel.x = 0;
+		if (mouse.presses() || kb.presses("r")) resume();
 		camera.on();
 		return;
 	}
@@ -182,10 +186,12 @@ function draw() {
 	if (gameOver) {
 		camera.off();
 		background(10);
+		noStroke();
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(28);
 		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
+		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -301,6 +307,7 @@ function drawHUD() {
 	fill(0, 0, 0, 100);
 	rect(12, 12, 150, 46, 8);
 	fill(255);
+	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
 	text(`GIRAFFE: ${giraffeLife}`, 24, 35);
@@ -309,11 +316,17 @@ function drawHUD() {
 	fill(0, 0, 0, 100);
 	rect(width - 162, 12, 150, 46, 8);
 	fill(255);
+	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
 	text(`ROBOT: ${robotLife}`, width - 150, 35);
 
 	camera.on();
+}
+
+function resume() {
+	fight = false;
+	player.vel.x = SPEED;
 }
 
 function restart() {
@@ -356,11 +369,14 @@ function drawBodyOverlay() {
 
 	let catchs = [];
 
+	let head = null;
+	let rightHand = null;
+
 	for (let i = 0; i < poses.length; i++) {
 		const pose = poses[i];
 
-		const head = pose.keypoints[0];
-		const rightHand = pose.keypoints[10];
+		head = pose.keypoints[0];
+		rightHand = pose.keypoints[10];
 
 		// Gestion du jump : toutes les têtes doivent être au-dessus du seuil
 		if (head.y >= tresholdJump && head.y > 0) {
@@ -390,12 +406,15 @@ function drawBodyOverlay() {
 	pop();
 	camera.on();
 
+	if (!head) player.vel.x = 0;
+	else player.vel.x = SPEED;
+
 	// Jump si toutes les têtes au-dessus du seuil
 	jump = shouldJump && poses.length > 0;
 	catched = shouldCatch && poses.length > 0;
 	squat = shouldSquat && poses.length > 0;
 
-	shouldFight = catchs.every((c) => c) && poses.length > 1; // switch to 1 to handle 2 player
+	shouldFight = catchs.every((c) => c) && poses.length > 0; // switch to 1 to handle 2 player
 
 	catchs = [];
 }
@@ -405,6 +424,7 @@ function displayMessage() {
 	camera.off();
 	fill(0, 0, 0, 200);
 	rect(0, height / 2 - 40, width, 80);
+	noStroke();
 	fill(255);
 	textAlign(CENTER, CENTER);
 	textSize(24);
