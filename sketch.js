@@ -2,9 +2,12 @@ let player, grounds, obstacles;
 let score = 0;
 let gameOver = false;
 let jump = false;
+let catched = false;
 let bodyPose;
 let poses = [];
-let playerImg, groundImg;
+let lastSpawnX = 0;
+
+const freeMode = true; // mode sans obstacles, pour tester la détection de pose
 
 const size = {
 	width: 640,
