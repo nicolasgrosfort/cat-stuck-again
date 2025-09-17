@@ -1,53 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="favicon.png" />
-    <title>p5play</title>
+    <meta charset="utf-8" />
+    <title>Giraffe Runner</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
     <style>
       html,
       body {
-        background-color: black;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        overscroll-behavior: none;
-        width: 100vhw;
-        height: 100dvh;
-      }
-
-      main {
-        width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        margin: 0;
+        background: #1b1b1b;
       }
-
       canvas {
-        border: 1px dashed yellowgreen;
+        display: block;
+        margin: auto;
+        image-rendering: pixelated;
       }
     </style>
   </head>
-
   <body>
-    <main></main>
+    <script>
+      (() => {
+        const W = 800,
+          H = 450;
 
-    <!-- ONLINE LINKS -->
-    <script src="https://q5js.org/q5.js"></script>
-    <script src="https://p5play.org/v3/planck.min.js"></script>
-    <script src="https://p5play.org/v3/p5play.js"></script>
-    <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+        const SPEED = 220; // world scroll speed
+        const GRAVITY = 1400; // jump feel
+        const JUMP_VY = -520;
+        const TILE_W = 64; // visual tile width after scaling
+        const TILE_H = 32;
+        const GAP_MIN = 2; // tiles
+        const GAP_MAX = 4;
+        const PLATFORM_MIN = 4; // tiles
+        const PLATFORM_MAX = 10;
 
-    <!-- OFFLINE LINKS -->
-    <!--
-	<script src="node_modules/q5/q5.js"></script>
-	<script src="node_modules/p5play/planck.min.js"></script>
-	<script src="node_modules/p5play/p5play.js"></script>
-	-->
+        let score = 0,
+          started = false,
+          gameOver = false;
 
-    <!-- YOUR SKETCH -->
-    <script src="sketch.js"></script>
+        class Main extends Phaser.Scene {
+          constructor() {
+            super("main");
+          }
+
+          preload() {
+            this.load.image("giraffe", "giraffe.png");
+            this.load.image("ground", "ground.png");
+          }
+
+          create() {
+            this.cameras.main.setBackgroundColor("#86d1f9");
+
+            // physics
+            this.physics.world.gravity.y = GRAVITY;
+
+            // groups
+            this.platforms = this.physics.add.group({
+              allowGravity: false,
+              immovable: true,
+            });
+            this.platforms.setDepth(1);
+
+            // player
+            this.player = this.physics.add.sprite(150, H - 200, "giraffe");
+            this.player.setScale(0.9);
+            this.player.setCollideWorldBounds(false);
+            this.player.body
+              .setSize(this.player.width * 0.45, this.player.height * 0.9)
+              .setOffset(this.player.width * 0.25, this.player.height * 0.05);
+
+            this.physics.add.collider(this.player, this.platforms);
+
+            // initial floor span
+            this._xCursor = 0;
+            this._spawnPlatform(PLATFORM_MAX); // start with a long platform
+
+            // input
+            this.keys = this.input.keyboard.addKeys("SPACE,UP");
+            this.input.on("pointerdown", () => this._tryJump());
+            this.input.keyboard.on("keydown", (e) => {
+              if (e.code === "Space" || e.code === "ArrowUp") this._tryJump();
+              if (gameOver && e.code === "KeyR") this.scene.restart();
+            });
+
+            // HUD
+            this.scoreText = this.add
+              .text(16, 16, "Score: 0", {
+                fontFamily: "monospace",
+                fontSize: "20px",
+                color: "#111",
+              })
+              .setScrollFactor(0);
+            this.tipText = this.add
+              .text(W / 2, H / 2, "Tap / Space to JUMP", {
+                fontFamily: "monospace",
+                fontSize: "22px",
+                color: "#111",
+              })
+              .setOrigin(0.5);
+          }
+
+          update(time, dt) {
+            if (gameOver) return;
+
+            // start scoring once first jump or first movement
+            if (!started) {
+              // nudge platforms left from the start
+              this.platforms.children.iterate((p) =>
+                p.body.setVelocityX(-SPEED)
+              );
+              started = true;
+              this.tipText.setVisible(false);
+            }
+
+            // spawn/despawn platforms
+            this._recyclePlatforms();
+
+            // basic fail states
+            if (this.player.y > H + 80 || this.player.x < -40) {
+              this._endGame();
+            }
+
+            // incremental score
+            score += (dt || 0) * 0.05;
+            this.scoreText.setText("Score: " + Math.floor(score));
+          }
+
+          _tryJump() {
+            if (gameOver) return;
+            // must be on ground (touching down)
+            if (
+              this.player.body.blocked.down ||
+              this.player.body.touching.down
+            ) {
+              this.player.setVelocityY(JUMP_VY);
+            }
+          }
+
+          _spawnPlatform(tileCount) {
+            // make a platform of N tiles; each tile is one body sprite scaled to TILE_WxTILE_H
+            for (let i = 0; i < tileCount; i++) {
+              const x = this._xCursor + TILE_W * 0.5 + i * TILE_W;
+              const y = H - TILE_H * 1.2;
+
+              const s = this.platforms.create(x, y, "ground");
+              // scale to tile size
+              const scaleX = TILE_W / s.width;
+              const scaleY = TILE_H / s.height;
+              s.setScale(scaleX, scaleY);
+              s.refreshBody();
+              s.body.setVelocityX(-SPEED);
+            }
+            this._xCursor += tileCount * TILE_W;
+          }
+
+          _spawnGap(tileCount) {
+            this._xCursor += tileCount * TILE_W;
+          }
+
+          _recyclePlatforms() {
+            // remove off-screen tiles & extend world on the right
+            let rightmost = -Infinity;
+
+            this.platforms.children.each((s) => {
+              if (s.x > rightmost) rightmost = s.x;
+              if (s.x < -TILE_W) s.destroy();
+            });
+
+            // ensure future content exists to the right of the screen
+            while (this._xCursor < this.cameras.main.scrollX + W + 2 * TILE_W) {
+              // alternate platform and gap
+              const platformLen = Phaser.Math.Between(
+                PLATFORM_MIN,
+                PLATFORM_MAX
+              );
+              this._spawnPlatform(platformLen);
+
+              const gapLen = Phaser.Math.Between(GAP_MIN, GAP_MAX);
+              this._spawnGap(gapLen);
+            }
+          }
+
+          _endGame() {
+            gameOver = true;
+            // stop world
+            this.platforms.children.iterate((p) => p.body.setVelocityX(0));
+            this.player.setTint(0xff5555);
+            this.time.delayedCall(100, () =>
+              this.add
+                .text(W / 2, H / 2, "Game Over\nPress R to restart", {
+                  fontFamily: "monospace",
+                  fontSize: "26px",
+                  align: "center",
+                  color: "#111",
+                })
+                .setOrigin(0.5)
+            );
+          }
+        }
+
+        new Phaser.Game({
+          type: Phaser.AUTO,
+          width: W,
+          height: H,
+          pixelArt: true,
+          backgroundColor: "#86d1f9",
+          physics: {
+            default: "arcade",
+            arcade: { gravity: { y: GRAVITY }, debug: false },
+          },
+          scene: Main,
+        });
+      })();
+    </script>
   </body>
 </html>
