@@ -9,6 +9,9 @@ let bodyPose;
 let poses = [];
 let lastSpawnX = 0;
 
+let giraffeEnergy = 100,
+	robotEnergy = 100;
+
 const freeMode = false; // mode sans obstacles, pour tester la détection de pose
 
 const size = {
@@ -16,8 +19,8 @@ const size = {
 	height: 480,
 };
 
-const tresholdJump = size.height * 0.45;
-const tresholdCatch = size.height * 0.25;
+const tresholdJump = size.height * 0.4;
+const tresholdCatch = size.height * 0.3;
 
 console.log("ml5 version:", ml5.version);
 
@@ -148,8 +151,14 @@ function draw() {
 	for (const t of trees) {
 		if (player.overlaps(t)) {
 			// Exemple : changer la couleur du player
-			player.color = "orange";
 			if (shouldFight) fight = true;
+			else if (catched) {
+				const nextEnergy = Math.round(random(-3, 3));
+				const dir = Math.round(random([-1, 1]));
+
+				if (dir < 0) giraffeEnergy -= nextEnergy;
+				else robotEnergy -= nextEnergy;
+			}
 		}
 	}
 
@@ -172,6 +181,23 @@ function drawHUD() {
 	textSize(16);
 	textAlign(LEFT, CENTER);
 	text(`SCORE: ${score}`, 24, 35);
+
+	// Girafe energy, top right
+	fill(0, 0, 0, 100);
+	rect(width - 162, 12, 150, 46, 8);
+	fill(255);
+	textSize(16);
+	textAlign(LEFT, CENTER);
+	text(`GIRAFFE: ${giraffeEnergy}`, width - 150, 35);
+
+	// Robot energy, top right
+	fill(0, 0, 0, 100);
+	rect(width - 162, 64, 150, 46, 8);
+	fill(255);
+	textSize(16);
+	textAlign(LEFT, CENTER);
+	text(`ROBOT: ${robotEnergy}`, width - 150, 87);
+
 	camera.on();
 }
 
@@ -204,7 +230,7 @@ function drawBodyOverlay() {
 
 	let shouldJump = true;
 	let shouldCatch = false;
-	// let shouldFight = false;
+
 	let catchs = [];
 
 	for (let i = 0; i < poses.length; i++) {
@@ -240,7 +266,7 @@ function drawBodyOverlay() {
 	jump = shouldJump && poses.length > 0;
 	catched = shouldCatch && poses.length > 0;
 
-	shouldFight = catchs.every((c) => c) && poses.length > 0; // switch to 1 to handle 2 player
+	shouldFight = catchs.every((c) => c) && poses.length > 1; // switch to 1 to handle 2 player
 
 	catchs = [];
 }
