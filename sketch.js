@@ -1,12 +1,15 @@
 let player, grounds, obstacles, trees;
 let gameOver = false;
+let squat = false;
 let jump = false;
+let win = false;
 let catched = false;
 let shouldFight = false;
 let fight = false;
 let bodyPose;
 let poses = [];
-let lastSpawnX = 0;
+
+const TILE = 100;
 
 const message = {
 	text: "",
@@ -16,8 +19,6 @@ const message = {
 let giraffeLife = 100,
 	robotLife = 100;
 
-const freeMode = false; // mode sans obstacles, pour tester la détection de pose
-
 const size = {
 	width: 640,
 	height: 480,
@@ -26,11 +27,50 @@ const size = {
 const tresholdJump = size.height * 0.4;
 const tresholdCatch = size.height * 0.4;
 
+const levelLines = [
+	"---------O---H-----T---T-----O------H-------O----T-------T-------H---E",
+];
+
 console.log("ml5 version:", ml5.version);
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
+}
+
+function buildLevel() {
+	for (let row = 0; row < levelLines.length; row++) {
+		const line = levelLines[row];
+		for (let col = 0; col < line.length; col++) {
+			const char = line[col];
+
+			const xSprite = col * TILE + TILE * 0.5;
+			const ySprite = height - grounds.h;
+
+			const xGround = col * TILE + TILE / 2;
+			const yGround = height - grounds.h / 2;
+
+			if (char !== "H") new grounds.Sprite(xGround, yGround);
+			if (char === "O")
+				new obstacles.Sprite(xSprite, ySprite - obstacles.h * 2);
+			if (char === "T") new trees.Sprite(xSprite, ySprite - trees.h * 0.5);
+
+			if (char === "E") {
+				const xEnd = col * TILE + TILE * 0.5;
+				const yEnd = height - grounds.h - TILE;
+				const end = new Sprite(xEnd, yEnd, TILE * 0.5, TILE * 2);
+				end.collider = "none";
+				end.color = "blue";
+				end.rotationLock = true;
+				end.friction = 0;
+				end.bounciness = 0;
+
+				end.overlaps(player, () => {
+					win = true;
+				});
+			}
+		}
+	}
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -47,51 +87,57 @@ function setup() {
 	world.gravity.y = 30;
 
 	// Player
-	player = new Sprite(120, height - 160, 40, 60);
+	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
 	player.color = "gold";
 	player.rotationLock = true;
 	player.friction = 0;
-	player.vel.x = 6;
 	player.bounciness = 0;
+	player.vel.x = 8;
 
 	// Grounds
 	grounds = new Group();
 	grounds.collider = "static";
 	grounds.color = "green";
-	grounds.h = 40;
-	grounds.w = 600;
+	grounds.h = TILE * 0.5;
+	grounds.w = TILE;
 	grounds.bounciness = 0;
-
-	// On crée
-
-	// 3 segments de sol pour boucler
-	const groundY = height - grounds.h / 2;
-	for (let i = 0; i < 3; i++) {
-		new grounds.Sprite(i * grounds.w + grounds.w / 2, groundY);
-	}
 
 	// Obstacles
 	obstacles = new Group();
 	obstacles.collider = "none";
-	obstacles.w = 40;
-	obstacles.h = 40;
+	obstacles.w = TILE * 0.5;
+	obstacles.h = TILE * 0.5;
 	obstacles.color = "tomato";
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
 	// Trees
 	trees = new Group();
 	trees.collider = "none";
-	trees.w = 80;
-	trees.h = 200;
+	trees.w = TILE * 0.5;
+	trees.h = TILE * 2;
 	trees.color = "lightgreen";
 	trees.offset.y = 0; // posé sur le sol
 
 	textFont("monospace");
+
+	buildLevel();
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function draw() {
 	background("#87CEEB");
+
+	if (win) {
+		camera.off();
+		background("lightgreen");
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(48);
+		text("YOU WIN!", width / 2, height / 2);
+		if (mouse.presses() || kb.presses("r")) restart();
+		camera.on();
+		return;
+	}
 
 	if (fight) {
 		camera.off();
@@ -120,17 +166,12 @@ function draw() {
 	// Caméra suit le joueur
 	camera.x = player.x + width * 0.25;
 
-	// Recyclage des segments de sol (quand ils sortent à gauche, on les remet à droite)
-	for (const g of grounds) {
-		if (g.x + g.w / 2 < camera.x - width / 2) {
-			g.x += grounds.length * g.w;
-		}
-	}
-
 	// Saut (seulement si on touche le sol)
 	const onGround = player.colliding(grounds);
 
-	if (kb.presses("c")) catched = true;
+	if (kb.pressing("c")) catched = true;
+	if (kb.pressing("s") || kb.pressing("down")) squat = true;
+	else squat = false;
 
 	if (
 		(jump ||
@@ -140,22 +181,19 @@ function draw() {
 			kb.presses("up")) &&
 		onGround
 	) {
-		player.vel.y = -12;
+		player.vel.y = -10;
+	}
+
+	if (squat) {
+		player.scale.y = 0.5;
+	} else {
+		player.scale.y = 1;
 	}
 
 	if (catched) {
 		player.color = "cyan";
 	} else {
 		player.color = "gold";
-	}
-
-	// Spawn d’obstacles devant la caméra
-	spawnObstacle();
-	spawnTree();
-
-	// Collision = fin de partie
-	if (player.colliding(obstacles)) {
-		gameOver = true;
 	}
 
 	// Check collision obstacles
@@ -202,11 +240,14 @@ function draw() {
 	}
 
 	displayMessage();
-
 	decreaseLife();
 
 	drawHUD();
 	drawBodyOverlay();
+
+	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
+		gameOver = true;
+	}
 }
 
 function gotPoses(results) {
@@ -220,10 +261,6 @@ function decreaseLife() {
 			: giraffeLife;
 	robotLife =
 		frameCount % 30 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
-
-	if (giraffeLife <= 0 || robotLife <= 0) {
-		gameOver = true;
-	}
 }
 
 function drawHUD() {
@@ -254,18 +291,12 @@ function restart() {
 	player.vel = { x: 6, y: 0 };
 	player.rotation = 0;
 
-	// Reset obstacles
-	obstacles.removeAll();
-
-	// Replacer les segments de sol
-	let i = 0;
-	for (const g of grounds) {
-		g.x = i * g.w + g.w / 2;
-		i++;
-	}
-
 	score = 0;
 	gameOver = false;
+	win = false;
+	fight = false;
+	giraffeLife = 100;
+	robotLife = 100;
 }
 
 function drawBodyOverlay() {
@@ -328,40 +359,4 @@ function displayMessage() {
 	textSize(24);
 	text(message.text, width / 2, height / 2);
 	camera.on();
-}
-
-function spawnObstacle() {
-	if (freeMode) return;
-
-	if (frameCount % int(random(60, 90)) === 0) {
-		const minDistance = 200; // distance minimale
-		const xSpawn = camera.x + width + random(80, 240);
-		const yTop = height - grounds.h - obstacles.h / 2;
-
-		// Vérifie que le nouvel obstacle est assez loin du précédent
-		if (xSpawn - lastSpawnX >= minDistance) {
-			new obstacles.Sprite(xSpawn, yTop);
-			lastSpawnX = xSpawn;
-		}
-	}
-
-	// Nettoyage des obstacles passés derrière la caméra (perf)
-	for (const o of obstacles) {
-		if (o.x + o.w < camera.x - width) o.remove();
-	}
-}
-
-function spawnTree() {
-	// Spawn d’arbres
-	if (frameCount % 120 === 0) {
-		const xSpawn = camera.x + width + random(80, 240);
-		const yTop = height - grounds.h - trees.h / 2;
-
-		new trees.Sprite(xSpawn, yTop);
-	}
-
-	// Nettoyage des arbres passés derrière la caméra (perf)
-	for (const t of trees) {
-		if (t.x + t.w < camera.x - width) t.remove();
-	}
 }
