@@ -1,5 +1,4 @@
 let player, grounds, obstacles, trees;
-let score = 0;
 let gameOver = false;
 let jump = false;
 let catched = false;
@@ -9,8 +8,13 @@ let bodyPose;
 let poses = [];
 let lastSpawnX = 0;
 
-let giraffeEnergy = 100,
-	robotEnergy = 100;
+const message = {
+	text: "",
+	expiration: 0,
+};
+
+let giraffeLife = 100,
+	robotLife = 100;
 
 const freeMode = false; // mode sans obstacles, pour tester la détection de pose
 
@@ -20,7 +24,7 @@ const size = {
 };
 
 const tresholdJump = size.height * 0.4;
-const tresholdCatch = size.height * 0.3;
+const tresholdCatch = size.height * 0.4;
 
 console.log("ml5 version:", ml5.version);
 
@@ -48,6 +52,7 @@ function setup() {
 	player.rotationLock = true;
 	player.friction = 0;
 	player.vel.x = 6;
+	player.bounciness = 0;
 
 	// Grounds
 	grounds = new Group();
@@ -55,6 +60,9 @@ function setup() {
 	grounds.color = "green";
 	grounds.h = 40;
 	grounds.w = 600;
+	grounds.bounciness = 0;
+
+	// On crée
 
 	// 3 segments de sol pour boucler
 	const groundY = height - grounds.h / 2;
@@ -64,7 +72,7 @@ function setup() {
 
 	// Obstacles
 	obstacles = new Group();
-	obstacles.collider = "static";
+	obstacles.collider = "none";
 	obstacles.w = 40;
 	obstacles.h = 40;
 	obstacles.color = "tomato";
@@ -122,6 +130,8 @@ function draw() {
 	// Saut (seulement si on touche le sol)
 	const onGround = player.colliding(grounds);
 
+	if (kb.presses("c")) catched = true;
+
 	if (
 		(jump ||
 			mouse.presses() ||
@@ -134,9 +144,9 @@ function draw() {
 	}
 
 	if (catched) {
-		player.scale = 1.5;
+		player.color = "cyan";
 	} else {
-		player.scale = 1;
+		player.color = "gold";
 	}
 
 	// Spawn d’obstacles devant la caméra
@@ -148,22 +158,52 @@ function draw() {
 		gameOver = true;
 	}
 
+	// Check collision obstacles
+	for (const o of obstacles) {
+		if (player.overlaps(o)) {
+			const nextEnergy = Math.round(random(-3, -1));
+			const dir = Math.round(random([-1, 1]));
+
+			const expiration = frameCount + 60 * 3; // durée d’affichage du message
+
+			if (dir < 0) {
+				giraffeLife += nextEnergy;
+				message.text = `Giraffe ${nextEnergy}`;
+				message.expiration = expiration;
+			} else {
+				robotLife += nextEnergy;
+				message.text = `Robot ${nextEnergy}`;
+				message.expiration = expiration;
+			}
+		}
+	}
+
 	for (const t of trees) {
 		if (player.overlaps(t)) {
 			// Exemple : changer la couleur du player
 			if (shouldFight) fight = true;
 			else if (catched) {
-				const nextEnergy = Math.round(random(-3, 3));
+				const nextEnergy = Math.round(random(1, 3));
 				const dir = Math.round(random([-1, 1]));
 
-				if (dir < 0) giraffeEnergy -= nextEnergy;
-				else robotEnergy -= nextEnergy;
+				const expiration = frameCount + 60 * 3; // durée d’affichage du message
+
+				if (dir < 0) {
+					giraffeLife += nextEnergy;
+					message.text = `Giraffe ${nextEnergy}`;
+					message.expiration = expiration;
+				} else {
+					robotLife += nextEnergy;
+					message.text = `Robot ${nextEnergy}`;
+					message.expiration = expiration;
+				}
 			}
 		}
 	}
 
-	// Score = distance parcourue
-	score = max(score, int((player.x - 120) / 10));
+	displayMessage();
+
+	decreaseLife();
 
 	drawHUD();
 	drawBodyOverlay();
@@ -173,30 +213,37 @@ function gotPoses(results) {
 	poses = results;
 }
 
+function decreaseLife() {
+	giraffeLife =
+		frameCount % 30 === 0
+			? giraffeLife - Math.round(random([0, 1]))
+			: giraffeLife;
+	robotLife =
+		frameCount % 30 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
+
+	if (giraffeLife <= 0 || robotLife <= 0) {
+		gameOver = true;
+	}
+}
+
 function drawHUD() {
 	camera.off(); // HUD fixe à l’écran
+
+	// Girafe life, top left
 	fill(0, 0, 0, 100);
 	rect(12, 12, 150, 46, 8);
 	fill(255);
 	textSize(16);
 	textAlign(LEFT, CENTER);
-	text(`SCORE: ${score}`, 24, 35);
+	text(`GIRAFFE: ${giraffeLife}`, 24, 35);
 
-	// Girafe energy, top right
+	// Robot life, top right
 	fill(0, 0, 0, 100);
 	rect(width - 162, 12, 150, 46, 8);
 	fill(255);
 	textSize(16);
 	textAlign(LEFT, CENTER);
-	text(`GIRAFFE: ${giraffeEnergy}`, width - 150, 35);
-
-	// Robot energy, top right
-	fill(0, 0, 0, 100);
-	rect(width - 162, 64, 150, 46, 8);
-	fill(255);
-	textSize(16);
-	textAlign(LEFT, CENTER);
-	text(`ROBOT: ${robotEnergy}`, width - 150, 87);
+	text(`ROBOT: ${robotLife}`, width - 150, 35);
 
 	camera.on();
 }
@@ -269,6 +316,18 @@ function drawBodyOverlay() {
 	shouldFight = catchs.every((c) => c) && poses.length > 1; // switch to 1 to handle 2 player
 
 	catchs = [];
+}
+
+function displayMessage() {
+	if (message.text === "" || frameCount > message.expiration) return;
+	camera.off();
+	fill(0, 0, 0, 200);
+	rect(0, height / 2 - 40, width, 80);
+	fill(255);
+	textAlign(CENTER, CENTER);
+	textSize(24);
+	text(message.text, width / 2, height / 2);
+	camera.on();
 }
 
 function spawnObstacle() {
