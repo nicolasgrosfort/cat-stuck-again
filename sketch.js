@@ -28,10 +28,8 @@ const tresholdJump = size.height * 0.4;
 const tresholdCatch = size.height * 0.4;
 
 const levelLines = [
-	"---------O---H-----T---T-----O------H-------O----T-------T-------H---E",
+	"----T-----O---H-----T-O--T-----O------HH---T----O----T-------T-------H----------------E",
 ];
-
-console.log("ml5 version:", ml5.version);
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
@@ -39,36 +37,59 @@ function preload() {
 }
 
 function buildLevel() {
-	for (let row = 0; row < levelLines.length; row++) {
-		const line = levelLines[row];
-		for (let col = 0; col < line.length; col++) {
-			const char = line[col];
+	const line = levelLines[0];
 
-			const xSprite = col * TILE + TILE * 0.5;
-			const ySprite = height - grounds.h;
+	// --- A) SOLS : segments fusionnés entre 'H' ---
+	let start = null;
+	for (let col = 0; col <= line.length; col++) {
+		const isGround = col < line.length && line[col] !== "H";
+		if (isGround && start === null) start = col; // début de segment
+		if ((!isGround || col === line.length) && start !== null) {
+			// segment [start .. col-1]
+			const len = col - start;
+			const segW = len * TILE;
+			const x = Math.round(start * TILE + (len * TILE) / 2);
+			const y = Math.round(height - grounds.h * 0.5);
 
-			const xGround = col * TILE + TILE / 2;
-			const yGround = height - grounds.h / 2;
+			const g = new grounds.Sprite(x, y);
+			g.w = segW; // largeur du segment d’un coup
+			g.h = grounds.h;
+			g.rotation = 0;
+			g.friction = 0;
+			g.bounciness = 0;
 
-			if (char !== "H") new grounds.Sprite(xGround, yGround);
-			if (char === "O")
-				new obstacles.Sprite(xSprite, ySprite - obstacles.h * 2);
-			if (char === "T") new trees.Sprite(xSprite, ySprite - trees.h * 0.5);
+			start = null;
+		}
+	}
 
-			if (char === "E") {
-				const xEnd = col * TILE + TILE * 0.5;
-				const yEnd = height - grounds.h - TILE;
-				const end = new Sprite(xEnd, yEnd, TILE * 0.5, TILE * 2);
-				end.collider = "none";
-				end.color = "blue";
-				end.rotationLock = true;
-				end.friction = 0;
-				end.bounciness = 0;
+	// --- B) OBJETS (O/T/E) : positionnés colonne par colonne ---
+	for (let col = 0; col < line.length; col++) {
+		const c = line[col];
+		const xCenter = Math.round(col * TILE + TILE * 0.5);
+		const yGroundTop = Math.round(height - grounds.h);
 
-				end.overlaps(player, () => {
-					win = true;
-				});
-			}
+		if (c === "O") {
+			const yO = Math.round(yGroundTop - obstacles.h * 2);
+			new obstacles.Sprite(xCenter, yO);
+		} else if (c === "T") {
+			const yT = Math.round(yGroundTop - trees.h * 0.5);
+			new trees.Sprite(xCenter, yT);
+		} else if (c === "E") {
+			const end = new Sprite(
+				xCenter,
+				Math.round(yGroundTop - TILE),
+				TILE * 0.5,
+				TILE * 2,
+			);
+			end.collider = "none";
+			end.color = "blue";
+			end.stroke = "lightblue";
+			end.rotationLock = true;
+			end.friction = 0;
+			end.bounciness = 0;
+			end.overlaps(player, () => {
+				win = true;
+			}); // assure-toi d’avoir let win = false;
 		}
 	}
 }
@@ -88,8 +109,8 @@ function setup() {
 
 	// Player
 	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	player.color = "gold";
-	player.rotationLock = true;
+	player.color = "yellow";
+	player.stroke = "lightblue";
 	player.friction = 0;
 	player.bounciness = 0;
 	player.vel.x = 8;
@@ -97,7 +118,8 @@ function setup() {
 	// Grounds
 	grounds = new Group();
 	grounds.collider = "static";
-	grounds.color = "green";
+	grounds.color = "brown";
+	grounds.stroke = "lightblue";
 	grounds.h = TILE * 0.5;
 	grounds.w = TILE;
 	grounds.bounciness = 0;
@@ -108,6 +130,7 @@ function setup() {
 	obstacles.w = TILE * 0.5;
 	obstacles.h = TILE * 0.5;
 	obstacles.color = "tomato";
+	obstacles.stroke = "lightblue";
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
 	// Trees
@@ -115,7 +138,8 @@ function setup() {
 	trees.collider = "none";
 	trees.w = TILE * 0.5;
 	trees.h = TILE * 2;
-	trees.color = "lightgreen";
+	trees.color = "green";
+	trees.stroke = "lightblue";
 	trees.offset.y = 0; // posé sur le sol
 
 	textFont("monospace");
@@ -125,7 +149,7 @@ function setup() {
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function draw() {
-	background("#87CEEB");
+	background("lightblue");
 
 	if (win) {
 		camera.off();
@@ -182,6 +206,8 @@ function draw() {
 		onGround
 	) {
 		player.vel.y = -10;
+		player.rotation = 0;
+		player.vel.x = 8;
 	}
 
 	if (squat) {
@@ -191,9 +217,9 @@ function draw() {
 	}
 
 	if (catched) {
-		player.color = "cyan";
+		player.color = "orange";
 	} else {
-		player.color = "gold";
+		player.color = "yellow";
 	}
 
 	// Check collision obstacles
@@ -287,8 +313,10 @@ function drawHUD() {
 
 function restart() {
 	// Reset joueur
-	player.pos = { x: 120, y: height - 160 };
-	player.vel = { x: 6, y: 0 };
+	player.pos.x = TILE;
+	player.pos.y = height - TILE * 2;
+	player.vel.x = 8;
+	player.vel.y = 0;
 	player.rotation = 0;
 
 	score = 0;
