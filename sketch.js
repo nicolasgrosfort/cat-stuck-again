@@ -218,40 +218,15 @@ function draw() {
 	}
 
 	if (waitingForPlayers) {
-		if (!gameHasStarted) {
-			camera.off();
-			noStroke();
-			fill(0);
-			textAlign(CENTER, CENTER);
-			textSize(24);
-			text(
-				`Waiting for ${2 - poses.length} player(s)...`,
-				width / 2,
-				height / 2,
-			);
-			giraffe.vel.x = 0;
-			camera.on();
-			return;
-		}
-
-		// if (gameHasStarted && !penalityApplied) {
-		// 	const nextEnergy = Math.round(random(-3, -1));
-		// 	const dir = Math.round(random([-1, 1]));
-
-		// 	penalityApplied = true;
-
-		// 	const expiration = frameCount + 60 * 3; // durée d’affichage du message
-
-		// 	if (dir < 0) {
-		// 		giraffeLife += nextEnergy;
-		// 		MESSAGE.text = `Penality for Giraffe ${nextEnergy}`;
-		// 		MESSAGE.expiration = expiration;
-		// 	} else {
-		// 		robotLife += nextEnergy;
-		// 		MESSAGE.text = `Penality forRobot ${nextEnergy}`;
-		// 		MESSAGE.expiration = expiration;
-		// 	}
-		// }
+		camera.off();
+		noStroke();
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(24);
+		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
+		giraffe.vel.x = 0;
+		camera.on();
+		return;
 	} else {
 		penalityApplied = false;
 		giraffe.vel.x = SPEED;
