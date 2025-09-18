@@ -661,9 +661,19 @@ function drawBodyOverlay() {
 
 		// INDICATORS
 		noStroke();
-		fill(isGiraffe ? GIRAFFE.color : ROBOT.color);
+		fill(isGiraffe ? "transparent" : ROBOT.color);
 		circle(width, head.y, 20);
 		circle(0, rightHand.y, 20);
+
+		const giraffeFactor = 0.15;
+		isGiraffe &&
+			image(
+				GIRAFFE.image,
+				width - (GIRAFFE.image.width * giraffeFactor) / 2 - 15,
+				head.y - (GIRAFFE.image.height * giraffeFactor) / 2,
+				GIRAFFE.image.width * giraffeFactor,
+				GIRAFFE.image.height * giraffeFactor,
+			);
 	}
 
 	pop();
