@@ -668,8 +668,8 @@ function drawBodyOverlay() {
 		circle(width, head.y, 20);
 		circle(0, rightHand.y, 20);
 
-		const giraffeFactor = 0.15;
-		isGiraffe &&
+		if (isGiraffe) {
+			const giraffeFactor = 0.15;
 			image(
 				GIRAFFE.image,
 				width - (GIRAFFE.image.width * giraffeFactor) / 2 - 15,
@@ -677,6 +677,14 @@ function drawBodyOverlay() {
 				GIRAFFE.image.width * giraffeFactor,
 				GIRAFFE.image.height * giraffeFactor,
 			);
+			image(
+				GIRAFFE.image,
+				(GIRAFFE.image.width * giraffeFactor) / 2,
+				rightHand.y - (GIRAFFE.image.height * giraffeFactor) / 2,
+				GIRAFFE.image.width * giraffeFactor,
+				GIRAFFE.image.height * giraffeFactor,
+			);
+		}
 	}
 
 	pop();
