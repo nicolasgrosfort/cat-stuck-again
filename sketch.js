@@ -75,7 +75,7 @@ const MESSAGE = {
 	expiration: 0,
 };
 
-let player, grounds, obstacles, trees, clouds;
+let player, grounds, obstacles, trees, clouds, playerImage;
 
 let gameOver = false,
 	fight = false,
@@ -117,7 +117,9 @@ function preload() {
 	GIRAFFE.crouch = loadImage("assets/players-crouched.png");
 	GIRAFFE.alone = loadImage("assets/giraffe.png");
 	ROBOT.alone = loadImage("assets/robot.png");
-	//ROBOT.crouch = loadImage("assets/robot_crouch.png");
+	GIRAFFE.catchGiraffe = loadImage("assets/giraffe-catch.png");
+	GIRAFFE.catchRobot = loadImage("assets/robot-catch.png");
+	GIRAFFE.catch = loadImage("assets/players-catch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
 }
 
@@ -136,15 +138,23 @@ function setup() {
 	// World
 	world.gravity.y = GRAVITY;
 
-	// Giraffe
+	// Player
 	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	player.image = GIRAFFE.image;
 	player.color = PLAYER.color;
 	player.stroke = SKY.color;
 	player.rotationLock = true;
 	player.friction = 0;
 	player.bounciness = 0;
 	player.vel.x = SPEED;
+	player.visible = false; // on ne voit pas le player d’origine, seulement playerImage
+
+	// Player Image
+	playerImage = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	playerImage.image = GIRAFFE.image;
+	playerImage.rotationLock = true;
+	playerImage.friction = 0;
+	playerImage.bounciness = 0;
+	playerImage.collider = "none";
 
 	// Grounds
 	grounds = new Group();
@@ -217,6 +227,9 @@ function draw() {
 	bodyReady();
 	checkIfTooManyPlayers();
 	handleRestart();
+
+	playerImage.pos.x = player.pos.x;
+	playerImage.pos.y = player.pos.y;
 
 	if (win) {
 		camera.off();
@@ -357,24 +370,25 @@ function draw() {
 	}
 
 	if (squat) {
-		//player.scale.y = 0.5;
-		player.image = GIRAFFE.crouch;
+		player.scale.y = 0.5;
+		playerImage.image = GIRAFFE.crouch;
 	}
 
 	if (catched) {
 		player.scale.x = 0.5;
 		player.scale.y = 1.5;
 
-		if (shouldFight) player.color = "red";
-		else player.color = lastCatcher === "giraffe" ? GIRAFFE.color : ROBOT.color;
+		if (shouldFight) playerImage.image = GIRAFFE.catch;
+		else if (lastCatcher === "giraffe")
+			playerImage.image = GIRAFFE.catchGiraffe;
+		else if (lastCatcher === "robot") playerImage.image = GIRAFFE.catchRobot;
 	} else {
 		player.scale.x = 1;
-		player.color = PLAYER.color;
 	}
 
 	if (!squat && !catched) {
-		//player.scale.y = 1;
-		player.image = GIRAFFE.image;
+		player.scale.y = 1;
+		playerImage.image = GIRAFFE.image;
 	}
 
 	// Check collision obstacles
