@@ -101,6 +101,8 @@ function preload() {
 	visualGroundsImg = loadImage("assets/ground.png");
 	treesImg = loadImage("assets/tree.png");
 	cloudsImg = loadImage("assets/cloud.png");
+	backgroundImg = loadImage("assets/background.png");
+	birdImg = loadImage("assets/bird.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -136,8 +138,8 @@ function setup() {
 
 	visualGrounds = new Group();
 	visualGrounds.collider = "none";
-	visualGrounds.color = GROUND.color;
-	visualGrounds.stroke = SKY.color;
+	//visualGrounds.color = GROUND.color;
+	//visualGrounds.stroke = SKY.color;
 	visualGrounds.h = TILE * 0.5;
 	visualGrounds.w = TILE;
 	visualGroundsImg.resize(visualGrounds.w*2, visualGrounds.h*2); // resize to group size
@@ -149,8 +151,10 @@ function setup() {
 	obstacles.collider = "none";
 	obstacles.w = TILE * 0.5;
 	obstacles.h = TILE * 0.5;
-	obstacles.color = OBSTACLE.color;
-	obstacles.stroke = SKY.color;
+	//obstacles.color = OBSTACLE.color;
+	//obstacles.stroke = SKY.color;
+	birdImg.resize(obstacles.w*2, obstacles.h*2);
+	obstacles.image = birdImg;
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
 	// Trees
@@ -180,7 +184,7 @@ function setup() {
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function draw() {
-	background("lightblue");
+	background(backgroundImg);
 
 	bodyReady();
 
