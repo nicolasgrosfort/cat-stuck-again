@@ -93,6 +93,7 @@ const levelLines = [
 ];
 
 let song;
+let houseImg;
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
@@ -100,6 +101,7 @@ function preload() {
 	visualGroundsImg = loadImage("assets/ground.png");
 	treesImg = loadImage("assets/tree.png");
 	cloudsImg = loadImage("assets/cloud.png");
+	houseImg = loadImage("assets/house.png");
 	backgroundImg = loadImage("assets/background.png");
 	birdImg = loadImage("assets/bird.png");
 	GIRAFFE.image = loadImage("assets/players.png");
@@ -514,14 +516,19 @@ function buildLevel() {
 				TILE * 2,
 			);
 			end.collider = "none";
-			end.color = END.color;
-			end.stroke = SKY.color;
+			end.visible = false;
 			end.rotationLock = true;
 			end.friction = 0;
 			end.bounciness = 0;
 			end.overlaps(player, () => {
 				win = true;
-			}); // assure-toi d’avoir let win = false;
+			});
+
+			const endImage = new Sprite();
+			endImage.collider = "none";
+			endImage.image = houseImg;
+			endImage.pos.x = end.pos.x;
+			endImage.pos.y = end.pos.y;
 		}
 
 		if (c !== "H") {
