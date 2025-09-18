@@ -101,6 +101,11 @@ function buildLevel() {
 				win = true;
 			}); // assure-toi d’avoir let win = false;
 		}
+
+		if (c !== "H") {
+			const y = Math.round(height - grounds.h * 0.5);
+			new visualGrounds.Sprite(xCenter, y);
+		}
 	}
 }
 
@@ -134,6 +139,14 @@ function setup() {
 	grounds.h = TILE * 0.5;
 	grounds.w = TILE;
 	grounds.bounciness = 0;
+
+	visualGrounds = new Group();
+	visualGrounds.collider = "none";
+	visualGrounds.color = "red";
+	visualGrounds.stroke = "lightblue";
+	visualGrounds.h = TILE * 0.5;
+	visualGrounds.w = TILE;
+	visualGrounds.bounciness = 0;
 
 	// Obstacles
 	obstacles = new Group();
