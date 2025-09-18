@@ -15,6 +15,10 @@ const TRESHOLD = {
 	squat: SIZE.height * 0.6,
 };
 
+const PLAYER = {
+	color: "black",
+};
+
 const GIRAFFE = {
 	id: null,
 	isActive: false,
@@ -64,7 +68,7 @@ const MESSAGE = {
 	expiration: 0,
 };
 
-let giraffe, robot, grounds, obstacles, trees;
+let player, grounds, obstacles, trees, clouds;
 
 let gameOver = false,
 	fight = false,
@@ -112,13 +116,13 @@ function setup() {
 	world.gravity.y = GRAVITY;
 
 	// Giraffe
-	giraffe = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	giraffe.color = GIRAFFE.color;
-	giraffe.stroke = SKY.color;
-	giraffe.rotationLock = true;
-	giraffe.friction = 0;
-	giraffe.bounciness = 0;
-	giraffe.vel.x = SPEED;
+	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	player.color = PLAYER.color;
+	player.stroke = SKY.color;
+	player.rotationLock = true;
+	player.friction = 0;
+	player.bounciness = 0;
+	player.vel.x = SPEED;
 
 	// Grounds
 	grounds = new Group();
@@ -183,7 +187,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("YOU WIN!", width / 2, height / 2);
-		giraffe.vel.x = 0;
+		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -197,7 +201,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("FIGHT!", width / 2, height / 2);
-		giraffe.vel.x = 0;
+		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) resume();
 		camera.on();
 		return;
@@ -211,7 +215,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(28);
 		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
-		giraffe.vel.x = 0;
+		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -224,20 +228,20 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(24);
 		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
-		giraffe.vel.x = 0;
+		player.vel.x = 0;
 		camera.on();
 		return;
 	} else {
 		penalityApplied = false;
-		giraffe.vel.x = SPEED;
+		player.vel.x = SPEED;
 	}
 
 	// Caméra suit le joueur
-	camera.x = giraffe.x + width * 0.25;
+	camera.x = player.x + width * 0.25;
 	gameHasStarted = true;
 
 	// Saut (seulement si on touche le sol)
-	const onGround = giraffe.colliding(grounds);
+	const onGround = player.colliding(grounds);
 
 	if (kb.pressing("c")) catched = true;
 	if (kb.pressing("s") || kb.pressing("down")) squat = true;
@@ -250,26 +254,26 @@ function draw() {
 		jump = true;
 
 	if (jump && onGround) {
-		giraffe.vel.y = JUMP;
-		giraffe.rotation = 0;
-		giraffe.vel.x = SPEED;
+		player.vel.y = JUMP;
+		player.rotation = 0;
+		player.vel.x = SPEED;
 	}
 
 	if (squat) {
-		giraffe.scale.y = 0.5;
+		player.scale.y = 0.5;
 	} else {
-		giraffe.scale.y = 1;
+		player.scale.y = 1;
 	}
 
 	if (catched) {
-		giraffe.scale.x = 1.2;
+		player.scale.x = 1.2;
 	} else {
-		giraffe.scale.x = 1;
+		player.scale.x = 1;
 	}
 
 	// Check collision obstacles
 	for (const o of obstacles) {
-		if (giraffe.overlaps(o)) {
+		if (player.overlaps(o)) {
 			const nextEnergy = Math.round(random(-10, -1));
 			const dir = Math.round(random([-1, 1]));
 
@@ -288,7 +292,7 @@ function draw() {
 	}
 
 	for (const t of trees) {
-		if (giraffe.overlaps(t)) {
+		if (player.overlaps(t)) {
 			// Exemple : changer la couleur du player
 			if (shouldFight) fight = true;
 			else if (catched) {
@@ -324,11 +328,7 @@ function draw() {
 
 	spawnClouds();
 
-	if (
-		giraffeLife <= 0 ||
-		robotLife <= 0 ||
-		giraffe.y > height - giraffe.h / 2
-	) {
+	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
 		gameOver = true;
 	}
 }
@@ -386,7 +386,7 @@ function buildLevel() {
 			end.rotationLock = true;
 			end.friction = 0;
 			end.bounciness = 0;
-			end.overlaps(giraffe, () => {
+			end.overlaps(player, () => {
 				win = true;
 			}); // assure-toi d’avoir let win = false;
 		}
@@ -439,7 +439,7 @@ function drawLife() {
 	// GIRAFFE
 	fill(GIRAFFE.color);
 	noStroke();
-	rect(12, 12, 150, 46, 8);
+	rect(12, 12, 150, 46);
 	fill(SKY.color);
 	noStroke();
 	textSize(16);
@@ -449,7 +449,7 @@ function drawLife() {
 	// ROBOT
 	fill(ROBOT.color);
 	noStroke();
-	rect(width - 162, 12, 150, 46, 8);
+	rect(width - 162, 12, 150, 46);
 	fill(SKY.color);
 	noStroke();
 	textSize(16);
@@ -461,16 +461,16 @@ function drawLife() {
 
 function resume() {
 	fight = false;
-	giraffe.vel.x = SPEED;
+	player.vel.x = SPEED;
 }
 
 function restart() {
 	// Reset joueur
-	giraffe.pos.x = TILE;
-	giraffe.pos.y = height - TILE * 2;
-	giraffe.vel.x = SPEED;
-	giraffe.vel.y = 0;
-	giraffe.rotation = 0;
+	player.pos.x = TILE;
+	player.pos.y = height - TILE * 2;
+	player.vel.x = SPEED;
+	player.vel.y = 0;
+	player.rotation = 0;
 
 	// Reset settings
 	score = 0;
