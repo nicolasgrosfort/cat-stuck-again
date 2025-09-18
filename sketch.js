@@ -36,7 +36,8 @@ let player, grounds, obstacles, trees;
 
 let gameOver = false,
 	fight = false,
-	win = false;
+	win = false,
+	waitingForPlayers = true;
 
 let squat = false,
 	jump = false,
@@ -135,6 +136,8 @@ function setup() {
 function draw() {
 	background("lightblue");
 
+	bodyReady();
+
 	if (win) {
 		camera.off();
 		background("lightgreen");
@@ -175,6 +178,21 @@ function draw() {
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
+	}
+
+	if (waitingForPlayers) {
+		camera.off();
+		background("lightblue");
+		noStroke();
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(24);
+		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
+		player.vel.x = 0;
+		camera.on();
+		return;
+	} else {
+		player.vel.x = SPEED;
 	}
 
 	// Caméra suit le joueur
@@ -264,8 +282,6 @@ function draw() {
 
 	spawnClouds();
 
-	bodyReady();
-
 	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
 		gameOver = true;
 	}
@@ -338,8 +354,6 @@ function buildLevel() {
 
 // Detect if users are connected to the cameras (2 users)
 function bodyReady() {
-	if (poses.length < MIN_PLAYER) return;
-
 	GIRAFFE.isActive = false;
 	ROBOT.isActive = false;
 	GIRAFFE.id = null;
@@ -355,6 +369,9 @@ function bodyReady() {
 			if (!ROBOT.id) ROBOT.id = p.id;
 		}
 	});
+
+	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
+	else waitingForPlayers = true;
 }
 
 function gotPoses(results) {
@@ -463,6 +480,11 @@ function drawBodyOverlay() {
 
 		// CATCH
 		const shouldCatch = rightHand.y > 0 && rightHand.y <= TRESHOLD.catch;
+
+		console.log(
+			shouldCatch && (pose.id === GIRAFFE.id ? "GIRAFFE Catch" : "ROBOT Catch"),
+		);
+
 		catchs.push(shouldCatch);
 
 		// INDICATORS
