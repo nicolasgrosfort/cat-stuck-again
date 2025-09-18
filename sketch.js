@@ -23,6 +23,8 @@ const GIRAFFE = {
 	id: null,
 	isActive: false,
 	color: "orange",
+	image: null,
+	crouch: null,
 };
 
 const ROBOT = {
@@ -106,6 +108,9 @@ function preload() {
 	cloudsImg = loadImage("assets/cloud.png");
 	backgroundImg = loadImage("assets/background.png");
 	birdImg = loadImage("assets/bird.png");
+	GIRAFFE.image = loadImage("assets/giraffe.png");
+	GIRAFFE.crouch = loadImage("assets/giraffe-crouched.png");
+	//ROBOT.crouch = loadImage("assets/robot_crouch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
 }
 
@@ -126,6 +131,7 @@ function setup() {
 
 	// Giraffe
 	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	player.image = GIRAFFE.image;
 	player.color = PLAYER.color;
 	player.stroke = SKY.color;
 	player.rotationLock = true;
@@ -344,7 +350,8 @@ function draw() {
 	}
 
 	if (squat) {
-		player.scale.y = 0.5;
+		//player.scale.y = 0.5;
+		player.image = GIRAFFE.crouch;
 	}
 
 	if (catched) {
@@ -359,7 +366,8 @@ function draw() {
 	}
 
 	if (!squat && !catched) {
-		player.scale.y = 1;
+		//player.scale.y = 1;
+		player.image = GIRAFFE.image;
 	}
 
 	// Check collision obstacles
