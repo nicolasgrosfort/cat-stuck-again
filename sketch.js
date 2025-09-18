@@ -4,6 +4,8 @@ const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
 
+const MIN_PLAYER = 1;
+
 const SIZE = {
 	width: 640,
 	height: 480,
@@ -15,22 +17,36 @@ const TRESHOLD = {
 	squat: SIZE.height * 0.6,
 };
 
-let player, grounds, obstacles, trees;
-let gameOver = false;
-let squat = false;
-let jump = false;
-let win = false;
-let catched = false;
-let shouldFight = false;
-let fight = false;
-let bodyPose;
-let poses = [];
-let jumpArmed = true;
+const GIRAFFE = {
+	isActive: false,
+	id: null,
+};
 
-const message = {
+const ROBOT = {
+	isActive: false,
+	id: null,
+};
+
+const MESSAGE = {
 	text: "",
 	expiration: 0,
 };
+
+let player, grounds, obstacles, trees;
+
+let gameOver = false,
+	fight = false,
+	win = false;
+
+let squat = false,
+	jump = false,
+	catched = false;
+
+let shouldFight = false,
+	jumpArmed = true;
+
+let bodyPose,
+	poses = [];
 
 let giraffeLife = LIFE,
 	robotLife = LIFE;
@@ -42,71 +58,6 @@ const levelLines = [
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
-}
-
-function buildLevel() {
-	const line = levelLines[0];
-
-	// --- A) SOLS : segments fusionnés entre 'H' ---
-	let start = null;
-	for (let col = 0; col <= line.length; col++) {
-		const isGround = col < line.length && line[col] !== "H";
-		if (isGround && start === null) start = col; // début de segment
-		if ((!isGround || col === line.length) && start !== null) {
-			// segment [start .. col-1]
-			const len = col - start;
-			const segW = len * TILE;
-			const x = Math.round(start * TILE + (len * TILE) / 2);
-			const y = Math.round(height - grounds.h * 0.5);
-
-			const g = new grounds.Sprite(x, y);
-			g.w = segW; // largeur du segment d’un coup
-			g.h = grounds.h;
-			g.rotation = 0;
-			g.friction = 0;
-			g.bounciness = 0;
-
-			start = null;
-		}
-	}
-
-	// --- B) OBJETS (O/T/E) : positionnés colonne par colonne ---
-	for (let col = 0; col < line.length; col++) {
-		const c = line[col];
-		const xCenter = Math.round(col * TILE + TILE * 0.5);
-		const yGroundTop = Math.round(height - grounds.h);
-
-		if (c === "O") {
-			const yO = Math.round(yGroundTop - obstacles.h * 2);
-			new obstacles.Sprite(xCenter, yO);
-		} else if (c === "T") {
-			// TREE
-			const yT = Math.round(yGroundTop - trees.h * 0.5);
-			new trees.Sprite(xCenter, yT);
-		} else if (c === "E") {
-			// END
-			const end = new Sprite(
-				xCenter,
-				Math.round(yGroundTop - TILE),
-				TILE * 0.5,
-				TILE * 2,
-			);
-			end.collider = "none";
-			end.color = "blue";
-			end.stroke = "lightblue";
-			end.rotationLock = true;
-			end.friction = 0;
-			end.bounciness = 0;
-			end.overlaps(player, () => {
-				win = true;
-			}); // assure-toi d’avoir let win = false;
-		}
-
-		if (c !== "H") {
-			const y = Math.round(height - grounds.h * 0.5);
-			new visualGrounds.Sprite(xCenter, y);
-		}
-	}
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -270,12 +221,12 @@ function draw() {
 
 			if (dir < 0) {
 				giraffeLife += nextEnergy;
-				message.text = `Giraffe ${nextEnergy}`;
-				message.expiration = expiration;
+				MESSAGE.text = `Giraffe ${nextEnergy}`;
+				MESSAGE.expiration = expiration;
 			} else {
 				robotLife += nextEnergy;
-				message.text = `Robot ${nextEnergy}`;
-				message.expiration = expiration;
+				MESSAGE.text = `Robot ${nextEnergy}`;
+				MESSAGE.expiration = expiration;
 			}
 		}
 	}
@@ -292,12 +243,12 @@ function draw() {
 
 				if (dir < 0) {
 					giraffeLife += nextEnergy;
-					message.text = `Giraffe ${nextEnergy}`;
-					message.expiration = expiration;
+					MESSAGE.text = `Giraffe ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
 				} else {
 					robotLife += nextEnergy;
-					message.text = `Robot ${nextEnergy}`;
-					message.expiration = expiration;
+					MESSAGE.text = `Robot ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
 				}
 			}
 		}
@@ -313,9 +264,97 @@ function draw() {
 
 	spawnClouds();
 
+	bodyReady();
+
 	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
 		gameOver = true;
 	}
+}
+
+function buildLevel() {
+	const line = levelLines[0];
+
+	// --- A) SOLS : segments fusionnés entre 'H' ---
+	let start = null;
+	for (let col = 0; col <= line.length; col++) {
+		const isGround = col < line.length && line[col] !== "H";
+		if (isGround && start === null) start = col; // début de segment
+		if ((!isGround || col === line.length) && start !== null) {
+			// segment [start .. col-1]
+			const len = col - start;
+			const segW = len * TILE;
+			const x = Math.round(start * TILE + (len * TILE) / 2);
+			const y = Math.round(height - grounds.h * 0.5);
+
+			const g = new grounds.Sprite(x, y);
+			g.w = segW; // largeur du segment d’un coup
+			g.h = grounds.h;
+			g.rotation = 0;
+			g.friction = 0;
+			g.bounciness = 0;
+
+			start = null;
+		}
+	}
+
+	// --- B) OBJETS (O/T/E) : positionnés colonne par colonne ---
+	for (let col = 0; col < line.length; col++) {
+		const c = line[col];
+		const xCenter = Math.round(col * TILE + TILE * 0.5);
+		const yGroundTop = Math.round(height - grounds.h);
+
+		if (c === "O") {
+			const yO = Math.round(yGroundTop - obstacles.h * 2);
+			new obstacles.Sprite(xCenter, yO);
+		} else if (c === "T") {
+			// TREE
+			const yT = Math.round(yGroundTop - trees.h * 0.5);
+			new trees.Sprite(xCenter, yT);
+		} else if (c === "E") {
+			// END
+			const end = new Sprite(
+				xCenter,
+				Math.round(yGroundTop - TILE),
+				TILE * 0.5,
+				TILE * 2,
+			);
+			end.collider = "none";
+			end.color = "blue";
+			end.stroke = "lightblue";
+			end.rotationLock = true;
+			end.friction = 0;
+			end.bounciness = 0;
+			end.overlaps(player, () => {
+				win = true;
+			}); // assure-toi d’avoir let win = false;
+		}
+
+		if (c !== "H") {
+			const y = Math.round(height - grounds.h * 0.5);
+			new visualGrounds.Sprite(xCenter, y);
+		}
+	}
+}
+
+// Detect if users are connected to the cameras (2 users)
+function bodyReady() {
+	if (poses.length < MIN_PLAYER) return;
+
+	GIRAFFE.isActive = false;
+	ROBOT.isActive = false;
+	GIRAFFE.id = null;
+	ROBOT.id = null;
+
+	poses.forEach((p) => {
+		const isGiraffe = p.nose.x < SIZE.width / 2;
+		if (isGiraffe) {
+			GIRAFFE.isActive = true;
+			if (!GIRAFFE.id) GIRAFFE.id = p.id;
+		} else {
+			ROBOT.isActive = true;
+			if (!ROBOT.id) ROBOT.id = p.id;
+		}
+	});
 }
 
 function gotPoses(results) {
@@ -463,7 +502,7 @@ function drawBodyOverlay() {
 }
 
 function displayMessage() {
-	if (message.text === "" || frameCount > message.expiration) return;
+	if (MESSAGE.text === "" || frameCount > MESSAGE.expiration) return;
 	camera.off();
 	fill(0, 0, 0, 200);
 	rect(0, height / 2 - 40, width, 80);
@@ -471,7 +510,7 @@ function displayMessage() {
 	fill(255);
 	textAlign(CENTER, CENTER);
 	textSize(24);
-	text(message.text, width / 2, height / 2);
+	text(MESSAGE.text, width / 2, height / 2);
 	camera.on();
 }
 
