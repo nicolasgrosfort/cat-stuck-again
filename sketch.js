@@ -244,7 +244,7 @@ function draw() {
 
 	if (fight) {
 		camera.off();
-		background("red");
+		background("lightcoral");
 		noStroke();
 		fill(255);
 		textAlign(CENTER, CENTER);
@@ -260,9 +260,17 @@ function draw() {
 
 			const isGiraffe = p.id === GIRAFFE.id;
 
-			noStroke();
-			fill(isGiraffe ? GIRAFFE.color : ROBOT.color);
-			circle(leftHand.x, leftHand.y, 20);
+			// INDICATORS
+			const targetImage = isGiraffe ? GIRAFFE.alone : ROBOT.alone;
+			const imageFactor = 0.15;
+
+			image(
+				targetImage,
+				leftHand.x - (targetImage.width * imageFactor) / 2 - 15,
+				leftHand.y - (targetImage.height * imageFactor) / 2,
+				targetImage.width * imageFactor,
+				targetImage.height * imageFactor,
+			);
 
 			// Detect if hand is inside a random area
 			const handInArea =
@@ -274,6 +282,7 @@ function draw() {
 			// draw area
 			noFill();
 			stroke(255);
+			strokeWeight(2);
 			rect(width / 2 - 100, height / 2 - 50, 200, 100);
 
 			if (handInArea) {
@@ -425,12 +434,6 @@ function draw() {
 					robotLife += nextEnergy;
 					MESSAGE.text = `Robot +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
-				} else {
-					// Cas ambigu (les deux catchent ou aucun identifié) : pas de points ici
-					// Tu peux aussi choisir de splitter, mais comme tu as "fight" pour les deux,
-					// c’est plus clair de ne rien donner dans ce cas.
-					// MESSAGE.text = `No points (both/none)`;
-					// MESSAGE.expiration = expiration;
 				}
 			}
 		}
