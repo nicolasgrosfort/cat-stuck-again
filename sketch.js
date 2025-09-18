@@ -105,6 +105,8 @@ const levelLines = [
 	"-------T-------T-----O----HH--T--T---O--T---T--O---T--T-O---HH---T----O----T---O----T---T----H-----HH--O---T---E",
 ];
 
+let song;
+
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
@@ -121,6 +123,13 @@ function preload() {
 	GIRAFFE.catchRobot = loadImage("assets/robot-catch.png");
 	GIRAFFE.catch = loadImage("assets/players-catch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
+	song = loadAudio("/audios/song.mp3");
+}
+
+function mousePressed() {
+	song.play();
+
+	console.log("click");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
