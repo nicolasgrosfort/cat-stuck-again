@@ -49,10 +49,6 @@ const TREE = {
 	color: "green",
 };
 
-const END = {
-	color: "grey",
-};
-
 const INDICATOR = {
 	color: "black",
 };
@@ -62,7 +58,7 @@ const MESSAGE = {
 	expiration: 0,
 };
 
-let player, grounds, obstacles, trees, clouds, playerImage;
+let player, grounds, obstacles, trees, clouds, playerImage, bushes;
 
 let gameOver = false,
 	fight = false,
@@ -87,6 +83,8 @@ let bodyPose,
 
 let giraffeLife = LIFE,
 	robotLife = LIFE;
+
+let catImg, bushesImg1, leafImg, cloudsImg, backgroundImg;
 
 let minecraftFont;
 
@@ -135,6 +133,9 @@ function preload() {
 	squatSound = loadSound("/audios/squat.wav");
 	endSound = loadSound("/audios/end.wav");
 	winSound = loadSound("/audios/win.wav");
+	bushesImg1 = loadImage("assets/bushes-1.png");
+	catImg = loadImage("assets/cat.png");
+	leafImg = loadImage("assets/leaf.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -237,6 +238,11 @@ function setup() {
 	clouds.color = CLOUD.color;
 	clouds.stroke = SKY.color;
 	clouds.offset.y = -TILE * 1.5; // dans le ciel
+
+	// Bushes
+	bushes = new Group();
+	bushes.collider = "none";
+	bushes.image = bushesImg1;
 
 	buildLevel();
 }
@@ -533,8 +539,6 @@ function draw() {
 
 	drawTresholdIndicator();
 
-	spawnClouds();
-
 	playerImage.pos.x = player.pos.x;
 	playerImage.pos.y = player.pos.y - 20;
 
@@ -609,6 +613,24 @@ function buildLevel() {
 		if (c !== "H") {
 			const y = Math.round(height - grounds.h * 0.5);
 			new visualGrounds.Sprite(xCenter, y);
+
+			// Add random. bushes
+			if (Math.random() < 0.3) {
+				const yBush = Math.round(yGroundTop);
+				const bush = new bushes.Sprite(
+					xCenter + random(-TILE * 0.25, TILE * 0.25),
+					yBush,
+				);
+				bush.image = random([bushesImg1]);
+			}
+		}
+
+		// Add random clouds
+		if (Math.random() < 0.1) {
+			const yTop = random(height * 0.1, height * 0.4);
+			const scale = random(2, 4);
+			const cloud = new clouds.Sprite(xCenter + random(-TILE, TILE), yTop);
+			cloud.scale = scale;
 		}
 	}
 }
@@ -873,19 +895,4 @@ function displayMessage() {
 	textSize(24);
 	text(MESSAGE.text, width / 2, height / 2);
 	camera.on();
-}
-
-function spawnClouds() {
-	// Spawn de nuages
-	if (frameCount === 10 || frameCount % 180 === 0) {
-		const xSpawn = camera.x + width + random(80, 240);
-		const yTop = random(height * 0.1, height * 0.4);
-
-		new clouds.Sprite(xSpawn, yTop);
-	}
-
-	// Nettoyage des nuages passés derrière la caméra (perf)
-	for (const c of clouds) {
-		if (c.x + c.w < camera.x - width) c.remove();
-	}
 }
