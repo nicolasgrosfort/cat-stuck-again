@@ -23,6 +23,7 @@ const GIRAFFE = {
 	id: null,
 	isActive: false,
 	color: "orange",
+	alone: null,
 	image: null,
 	crouch: null,
 	catchGiraffe: null,
@@ -34,6 +35,7 @@ const ROBOT = {
 	id: null,
 	isActive: false,
 	color: "purple",
+	alone: null,
 };
 
 const SKY = {
@@ -113,6 +115,8 @@ function preload() {
 	birdImg = loadImage("assets/bird.png");
 	GIRAFFE.image = loadImage("assets/players.png");
 	GIRAFFE.crouch = loadImage("assets/players-crouched.png");
+	GIRAFFE.alone = loadImage("assets/giraffe.png");
+	ROBOT.alone = loadImage("assets/robot.png");
 	//ROBOT.crouch = loadImage("assets/robot_crouch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
 }
@@ -663,28 +667,23 @@ function drawBodyOverlay() {
 		const isGiraffe = pose.id === GIRAFFE.id;
 
 		// INDICATORS
-		noStroke();
-		fill(isGiraffe ? "transparent" : ROBOT.color);
-		circle(width, head.y, 20);
-		circle(0, rightHand.y, 20);
+		const targetImage = isGiraffe ? GIRAFFE.alone : ROBOT.alone;
+		const imageFactor = 0.15;
 
-		if (isGiraffe) {
-			const giraffeFactor = 0.15;
-			image(
-				GIRAFFE.image,
-				width - (GIRAFFE.image.width * giraffeFactor) / 2 - 15,
-				head.y - (GIRAFFE.image.height * giraffeFactor) / 2,
-				GIRAFFE.image.width * giraffeFactor,
-				GIRAFFE.image.height * giraffeFactor,
-			);
-			image(
-				GIRAFFE.image,
-				(GIRAFFE.image.width * giraffeFactor) / 2,
-				rightHand.y - (GIRAFFE.image.height * giraffeFactor) / 2,
-				GIRAFFE.image.width * giraffeFactor,
-				GIRAFFE.image.height * giraffeFactor,
-			);
-		}
+		image(
+			targetImage,
+			width - (targetImage.width * imageFactor) / 2 - 15,
+			head.y - (targetImage.height * imageFactor) / 2,
+			targetImage.width * imageFactor,
+			targetImage.height * imageFactor,
+		);
+		image(
+			targetImage,
+			(targetImage.width * imageFactor) / 2,
+			rightHand.y - (targetImage.height * imageFactor) / 2,
+			targetImage.width * imageFactor,
+			targetImage.height * imageFactor,
+		);
 	}
 
 	pop();
