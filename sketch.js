@@ -25,6 +25,7 @@ let shouldFight = false;
 let fight = false;
 let bodyPose;
 let poses = [];
+let jumpArmed = true;
 
 const message = {
 	text: "",
@@ -374,46 +375,45 @@ function drawTresholdIndicator() {
 }
 
 function drawBodyOverlay() {
+	if (poses.length <= 0) return;
+
 	camera.off();
 
 	push();
 	translate(width, 0);
 	scale(-1, 1);
 
-	let shouldJump = true;
+	// Flags instantanés pour l'analyse
+	let allHeadsAboveJump = true; // toutes les têtes < seuil (donc "au-dessus" physiquement)
+	let allHeadsBelowOrEqualJump = true; // toutes les têtes >= seuil (redescendues)
 	let shouldSquat = true;
-	let shouldCatch = false;
-
 	let catchs = [];
-
-	let head = null;
-	let rightHand = null;
 
 	for (let i = 0; i < poses.length; i++) {
 		const pose = poses[i];
 
-		head = pose.keypoints[0];
-		rightHand = pose.keypoints[10];
+		const head = pose.keypoints[0];
+		const rightHand = pose.keypoints[10];
 
-		// Gestion du jump : toutes les têtes doivent être au-dessus du seuil
-		if (head.y >= TRESHOLD.jump && head.y > 0) {
-			shouldJump = false;
+		// JUMP
+		if (!(head.y > 0)) {
+			allHeadsAboveJump = false;
+			allHeadsBelowOrEqualJump = false;
+		} else {
+			if (!(head.y < TRESHOLD.jump)) allHeadsAboveJump = false; // au moins une tête n'est pas au-dessus
+			if (!(head.y >= TRESHOLD.jump)) allHeadsBelowOrEqualJump = false; // au moins une tête n'est pas redescendue
 		}
 
-		// Gestion du squat : toutes les têtes doivent être en-dessous du seuil
+		// SQUAT
 		if (head.y <= TRESHOLD.squat && head.y > 0) {
 			shouldSquat = false;
 		}
 
-		if (rightHand.y <= TRESHOLD.catch && rightHand.y > 0) {
-			shouldCatch = true;
-		} else {
-			shouldCatch = false;
-		}
-
+		// CATCH
+		const shouldCatch = rightHand.y > 0 && rightHand.y <= TRESHOLD.catch;
 		catchs.push(shouldCatch);
 
-		// Debug visuel
+		// INDICATORS
 		noStroke();
 		fill(255, 0, 0);
 		circle(width, head.y, 20);
@@ -423,16 +423,29 @@ function drawBodyOverlay() {
 	pop();
 	camera.on();
 
-	if (!head) player.vel.x = 0;
-	else player.vel.x = SPEED;
+	// --- Déclenchement "edge" du jump ---
+	// On saute UNE FOIS quand toutes les têtes passent au-dessus du seuil ET que c'est armé.
+	if (jumpArmed && allHeadsAboveJump && poses.length > 0) {
+		jump = true; // évènement instantané : true seulement ce frame
+		jumpArmed = false; // se désarme : il faudra redescendre pour réarmer
+	} else {
+		jump = false; // pas d'évènement ce frame
+	}
 
-	// Jump si toutes les têtes au-dessus du seuil
-	jump = shouldJump && poses.length > 0;
-	catched = shouldCatch && poses.length > 0;
+	// Réarmement : toutes les têtes doivent être repassées sous (>=) le seuil
+	if (allHeadsBelowOrEqualJump && poses.length > 0) {
+		jumpArmed = true;
+	}
+
+	// Le reste de tes états
 	squat = shouldSquat && poses.length > 0;
+	const shouldCatchAll = catchs.every(Boolean);
+	catched = shouldCatchAll && poses.length > 0;
 
-	shouldFight = catchs.every((c) => c) && poses.length > 1; // switch to 1 to handle 2 player
+	// Exemple de logique "fight" que tu avais
+	shouldFight = shouldCatchAll && poses.length > 1;
 
+	// nettoyage local
 	catchs = [];
 }
 
