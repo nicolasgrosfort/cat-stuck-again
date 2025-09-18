@@ -155,6 +155,7 @@ function setup() {
 	playerImage.friction = 0;
 	playerImage.bounciness = 0;
 	playerImage.collider = "none";
+	playerImage.layer = -1;
 
 	// Grounds
 	grounds = new Group();
@@ -164,27 +165,26 @@ function setup() {
 	grounds.h = TILE * 0.5;
 	grounds.w = TILE;
 	grounds.bounciness = 0;
+	grounds.layer = -1; // derrière le player
+	grounds.visible = false; // on ne voit pas les sols d’origine, seulement visualGrounds
 
 	visualGrounds = new Group();
 	visualGrounds.collider = "none";
-	//visualGrounds.color = GROUND.color;
-	//visualGrounds.stroke = SKY.color;
 	visualGrounds.h = TILE * 0.5;
 	visualGrounds.w = TILE;
 	visualGroundsImg.resize(visualGrounds.w * 2, visualGrounds.h * 2); // resize to group size
 	visualGrounds.image = visualGroundsImg;
 	visualGrounds.bounciness = 0;
+	visualGrounds.layer = -1; // derrière le player
 
 	// Obstacles
 	obstacles = new Group();
 	obstacles.collider = "none";
 	obstacles.w = TILE * 0.5;
 	obstacles.h = TILE * 0.5;
-	//obstacles.color = OBSTACLE.color;
-	//obstacles.stroke = SKY.color;
 	birdImg.resize(obstacles.w * 2, obstacles.h * 2);
 	obstacles.image = birdImg;
-	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
+	obstacles.offset.y = -obstacles.h / 2;
 
 	// Trees
 	trees = new Group();
@@ -195,6 +195,7 @@ function setup() {
 	trees.color = TREE.color;
 	trees.stroke = SKY.color;
 	trees.offset.y = 0; // posé sur le sol
+	playerImage.layer = 10;
 
 	// Clouds
 	clouds = new Group();
@@ -227,9 +228,6 @@ function draw() {
 	bodyReady();
 	checkIfTooManyPlayers();
 	handleRestart();
-
-	playerImage.pos.x = player.pos.x;
-	playerImage.pos.y = player.pos.y;
 
 	if (win) {
 		camera.off();
@@ -448,6 +446,9 @@ function draw() {
 
 	spawnClouds();
 
+	playerImage.pos.x = player.pos.x;
+	playerImage.pos.y = player.pos.y - 20;
+
 	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
 		gameOver = true;
 	}
@@ -487,7 +488,7 @@ function buildLevel() {
 
 		if (c === "O") {
 			const yO = Math.round(yGroundTop - obstacles.h * 2);
-			new obstacles.Sprite(xCenter, yO);
+			new obstacles.Sprite(xCenter, yO - 20);
 		} else if (c === "T") {
 			// TREE
 			const yT = Math.round(yGroundTop - trees.h * 0.5);
