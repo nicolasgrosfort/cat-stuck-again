@@ -75,6 +75,8 @@ let squat = false,
 	jump = false,
 	catched = false;
 
+let hasSquatted = false;
+
 let shouldFight = false,
 	jumpArmed = true;
 
@@ -92,8 +94,21 @@ const levelLines = [
 	"-------T-------T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H-----HH--O---T---E",
 ];
 
-let song;
+let song,
+	collisionSound,
+	treeSound,
+	jumpSound,
+	squatSound,
+	fightSound,
+	winSound,
+	endSound;
 let houseImg;
+
+let hasFighted = false;
+
+let shakeIntensity = 0;
+let shakeDuration = 0;
+const shakeDecay = 0.95;
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
@@ -113,11 +128,20 @@ function preload() {
 	GIRAFFE.catch = loadImage("assets/players-catch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
 	song = loadSound("/audios/song.mp3");
+	collisionSound = loadSound("/audios/collision.wav");
+	treeSound = loadSound("/audios/tree.wav");
+	jumpSound = loadSound("/audios/jump.wav");
+	fightSound = loadSound("/audios/fight.wav");
+	squatSound = loadSound("/audios/squat.wav");
+	endSound = loadSound("/audios/end.wav");
+	winSound = loadSound("/audios/win.wav");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function mousePressed() {
-	if (isLooping()) {
+	if (win || gameOver) restart();
+
+	if (isLooping() || song.isPlaying()) {
 		song.pause();
 		noLoop();
 	} else {
@@ -228,6 +252,11 @@ function keyPressed() {
 	}
 }
 
+function triggerCameraShake(intensity = 10, duration = 30) {
+	shakeIntensity = intensity;
+	shakeDuration = duration;
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function draw() {
 	background(backgroundImg);
@@ -240,7 +269,7 @@ function draw() {
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
-		textSize(28);
+		textSize(48);
 		text(`Click to start/pause game`, width / 2, height / 2);
 		camera.on();
 		return;
@@ -248,13 +277,15 @@ function draw() {
 
 	if (win) {
 		camera.off();
-		background("lightgreen");
+		background("gold");
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("YOU WIN!", width / 2, height / 2);
 		player.vel.x = 0;
+		noLoop();
+		winSound.play();
 		camera.on();
 		return;
 	}
@@ -271,6 +302,12 @@ function draw() {
 		push();
 		translate(width, 0);
 		scale(-1, 1);
+
+		if (!hasFighted) {
+			if (!fightSound.isPlaying()) fightSound.play();
+			triggerCameraShake(10, 30);
+			hasFighted = true;
+		}
 
 		for (const p of poses) {
 			const leftHand = p.keypoints[9];
@@ -307,17 +344,20 @@ function draw() {
 
 				const expiration = frameCount + 60 * 3; // durée d’affichage du message
 
+				treeSound.play();
+
 				if (isGiraffe) {
 					giraffeLife += nextEnergy;
-					MESSAGE.text = `Giraffe ${nextEnergy}`;
+					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
 				} else {
 					robotLife += nextEnergy;
-					MESSAGE.text = `Robot ${nextEnergy}`;
+					MESSAGE.text = `ROBOT ${nextEnergy}`;
 					MESSAGE.expiration = expiration;
 				}
 
 				fight = false;
+				hasFighted = false;
 			}
 		}
 
@@ -333,13 +373,12 @@ function draw() {
 		noStroke();
 		fill(255);
 		textAlign(CENTER, CENTER);
-		textSize(28);
+		textSize(48);
 		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
 		player.vel.x = 0;
-
 		camera.on();
-
 		noLoop();
+		if (!endSound.isPlaying()) endSound.play();
 		return;
 	}
 
@@ -348,7 +387,7 @@ function draw() {
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
-		textSize(28);
+		textSize(48);
 		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
 		player.vel.x = 0;
 		camera.on();
@@ -363,7 +402,7 @@ function draw() {
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
-		textSize(28);
+		textSize(48);
 		text(`Too many players!`, width / 2, height / 2);
 		player.vel.x = 0;
 		camera.on();
@@ -371,7 +410,30 @@ function draw() {
 	}
 
 	// Caméra suit le joueur
-	camera.x = player.x + width * 0.25;
+
+	let shakeX = 0;
+	let shakeY = 0;
+
+	if (shakeDuration > 0) {
+		shakeX = random(-shakeIntensity, shakeIntensity);
+		shakeY = random(-shakeIntensity, shakeIntensity);
+
+		// Diminuer l'intensité et la durée
+		shakeIntensity *= shakeDecay;
+		shakeDuration--;
+
+		// Arrêter le shake quand l'intensité devient très faible
+		if (shakeIntensity < 0.5) {
+			shakeDuration = 0;
+			shakeIntensity = 0;
+		}
+	}
+
+	camera.x = player.x + width * 0.25 + shakeX;
+
+	console.log(camera.y, windowHeight / 2);
+	camera.y = height / 2 + shakeY;
+
 	gameHasStarted = true;
 
 	// Saut (seulement si on touche le sol)
@@ -385,11 +447,15 @@ function draw() {
 		player.vel.y = JUMP;
 		player.rotation = 0;
 		player.vel.x = SPEED;
+		jumpSound.play();
 	}
 
 	if (squat) {
 		player.scale.y = 0.5;
 		playerImage.image = GIRAFFE.crouch;
+
+		if (!hasSquatted && !squatSound.isPlaying()) squatSound.play();
+		hasSquatted = true;
 	}
 
 	if (catched) {
@@ -407,25 +473,31 @@ function draw() {
 	if (!squat && !catched) {
 		player.scale.y = 1;
 		playerImage.image = GIRAFFE.image;
+		hasSquatted = false;
 	}
 
 	// Check collision obstacles
 	for (const o of obstacles) {
 		if (player.overlaps(o)) {
-			const nextEnergy = Math.round(random(-10, -1));
+			const nextEnergy = Math.round(random(-10, -3));
 			const dir = Math.round(random([-1, 1]));
 
 			const expiration = frameCount + 60 * 3; // durée d’affichage du message
 
+			triggerCameraShake(15, 20);
+			collisionSound.play();
+
 			if (dir < 0) {
 				giraffeLife += nextEnergy;
-				MESSAGE.text = `Giraffe ${nextEnergy}`;
+				MESSAGE.text = `GIRAFFE ${nextEnergy}`;
 				MESSAGE.expiration = expiration;
 			} else {
 				robotLife += nextEnergy;
-				MESSAGE.text = `Robot ${nextEnergy}`;
+				MESSAGE.text = `ROBOT ${nextEnergy}`;
 				MESSAGE.expiration = expiration;
 			}
+
+			o.remove();
 		}
 	}
 
@@ -434,16 +506,18 @@ function draw() {
 			// Exemple : changer la couleur du player
 			if (shouldFight) fight = true;
 			else if (catched) {
-				const nextEnergy = Math.round(random(1, 5));
+				const nextEnergy = Math.round(random(3, 10));
 				const expiration = frameCount + 60 * 3;
+
+				treeSound.play();
 
 				if (lastCatcher === "giraffe") {
 					giraffeLife += nextEnergy;
-					MESSAGE.text = `Giraffe +${nextEnergy}`;
+					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
 				} else if (lastCatcher === "robot") {
 					robotLife += nextEnergy;
-					MESSAGE.text = `Robot +${nextEnergy}`;
+					MESSAGE.text = `ROBOT +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
 				}
 			}
@@ -601,7 +675,7 @@ function drawLife() {
 
 	fill(255);
 	noStroke();
-	textSize(20);
+	textSize(24);
 	textAlign(LEFT, CENTER);
 	text(`GIRAFFE`, 24, 35);
 
@@ -621,7 +695,7 @@ function drawLife() {
 
 	fill(255);
 	noStroke();
-	textSize(20);
+	textSize(24);
 	textAlign(LEFT, CENTER);
 	text(`ROBOT`, width - 150, 35);
 
