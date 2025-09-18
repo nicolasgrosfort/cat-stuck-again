@@ -618,9 +618,9 @@ function drawTresholdIndicator() {
 	camera.off();
 	stroke(INDICATOR.color);
 	noFill();
-	rect(-10, TRESHOLD.jump, 20, 1);
-	rect(-10, TRESHOLD.squat, 20, 1);
-	rect(width - 10, TRESHOLD.catch, 20, 1);
+	rect(-10, TRESHOLD.jump, 30, 1);
+	rect(-10, TRESHOLD.squat, 30, 1);
+	rect(width - 20, TRESHOLD.catch, 30, 1);
 	camera.on();
 }
 
