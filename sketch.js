@@ -25,6 +25,9 @@ const GIRAFFE = {
 	color: "orange",
 	image: null,
 	crouch: null,
+	catchGiraffe: null,
+	catchRobot: null,
+	catch: null,
 };
 
 const ROBOT = {
@@ -108,8 +111,8 @@ function preload() {
 	cloudsImg = loadImage("assets/cloud.png");
 	backgroundImg = loadImage("assets/background.png");
 	birdImg = loadImage("assets/bird.png");
-	GIRAFFE.image = loadImage("assets/giraffe.png");
-	GIRAFFE.crouch = loadImage("assets/giraffe-crouched.png");
+	GIRAFFE.image = loadImage("assets/players.png");
+	GIRAFFE.crouch = loadImage("assets/players-crouched.png");
 	//ROBOT.crouch = loadImage("assets/robot_crouch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
 }
