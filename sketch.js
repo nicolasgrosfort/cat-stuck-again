@@ -92,6 +92,8 @@ let bodyPose,
 let giraffeLife = LIFE,
 	robotLife = LIFE;
 
+let minecraftFont;
+
 const levelLines = [
 	"-------T-------T-----O----HH--T--T---O--T---T--O---T--T-O---HH---T----O----T---O----T---T----H-----HH--O---T---E",
 ];
@@ -104,12 +106,15 @@ function preload() {
 	cloudsImg = loadImage("assets/cloud.png");
 	backgroundImg = loadImage("assets/background.png");
 	birdImg = loadImage("assets/bird.png");
+	minecraftFont = loadFont("fonts/minecraft.ttf");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
 	new Canvas(SIZE.width, SIZE.height);
 	noSmooth();
+
+	textFont(minecraftFont);
 
 	video = createCapture(VIDEO);
 	video.size(SIZE.width, SIZE.height);
@@ -177,8 +182,6 @@ function setup() {
 	clouds.color = CLOUD.color;
 	clouds.stroke = SKY.color;
 	clouds.offset.y = -TILE * 1.5; // dans le ciel
-
-	textFont("monospace");
 
 	buildLevel();
 }
