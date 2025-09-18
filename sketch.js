@@ -16,13 +16,47 @@ const TRESHOLD = {
 };
 
 const GIRAFFE = {
-	isActive: false,
 	id: null,
+	isActive: false,
+	color: "orange",
 };
 
 const ROBOT = {
-	isActive: false,
 	id: null,
+	isActive: false,
+	color: "purple",
+};
+
+const SKY = {
+	color: "lightblue",
+};
+
+const CLOUD = {
+	color: "white",
+};
+
+const OBSTACLE = {
+	color: "brown",
+};
+
+const GROUND = {
+	color: "brown",
+};
+
+const TREE = {
+	color: "green",
+};
+
+const END = {
+	color: "grey",
+};
+
+const OVER = {
+	color: "black",
+};
+
+const INDICATOR = {
+	color: "black",
 };
 
 const MESSAGE = {
@@ -30,7 +64,7 @@ const MESSAGE = {
 	expiration: 0,
 };
 
-let player, grounds, obstacles, trees;
+let giraffe, robot, grounds, obstacles, trees;
 
 let gameOver = false,
 	fight = false,
@@ -77,28 +111,28 @@ function setup() {
 	// World
 	world.gravity.y = GRAVITY;
 
-	// Player
-	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	player.color = "yellow";
-	player.stroke = "lightblue";
-	player.rotationLock = true;
-	player.friction = 0;
-	player.bounciness = 0;
-	player.vel.x = SPEED;
+	// Giraffe
+	giraffe = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	giraffe.color = GIRAFFE.color;
+	giraffe.stroke = SKY.color;
+	giraffe.rotationLock = true;
+	giraffe.friction = 0;
+	giraffe.bounciness = 0;
+	giraffe.vel.x = SPEED;
 
 	// Grounds
 	grounds = new Group();
 	grounds.collider = "static";
-	grounds.color = "brown";
-	grounds.stroke = "lightblue";
+	grounds.color = GROUND.color;
+	grounds.stroke = SKY.color;
 	grounds.h = TILE * 0.5;
 	grounds.w = TILE;
 	grounds.bounciness = 0;
 
 	visualGrounds = new Group();
 	visualGrounds.collider = "none";
-	visualGrounds.color = "red";
-	visualGrounds.stroke = "lightblue";
+	visualGrounds.color = GROUND.color;
+	visualGrounds.stroke = SKY.color;
 	visualGrounds.h = TILE * 0.5;
 	visualGrounds.w = TILE;
 	visualGrounds.bounciness = 0;
@@ -108,8 +142,8 @@ function setup() {
 	obstacles.collider = "none";
 	obstacles.w = TILE * 0.5;
 	obstacles.h = TILE * 0.5;
-	obstacles.color = "tomato";
-	obstacles.stroke = "lightblue";
+	obstacles.color = OBSTACLE.color;
+	obstacles.stroke = SKY.color;
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
 	// Trees
@@ -117,8 +151,8 @@ function setup() {
 	trees.collider = "none";
 	trees.w = TILE * 0.5;
 	trees.h = TILE * 2;
-	trees.color = "green";
-	trees.stroke = "lightblue";
+	trees.color = TREE.color;
+	trees.stroke = SKY.color;
 	trees.offset.y = 0; // posé sur le sol
 
 	// Clouds
@@ -126,8 +160,8 @@ function setup() {
 	clouds.collider = "none";
 	clouds.w = TILE;
 	clouds.h = TILE * 0.5;
-	clouds.color = "white";
-	clouds.stroke = "lightblue";
+	clouds.color = CLOUD.color;
+	clouds.stroke = SKY.color;
 	clouds.offset.y = -TILE * 1.5; // dans le ciel
 
 	textFont("monospace");
@@ -149,7 +183,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("YOU WIN!", width / 2, height / 2);
-		player.vel.x = 0;
+		giraffe.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -163,7 +197,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(48);
 		text("FIGHT!", width / 2, height / 2);
-		player.vel.x = 0;
+		giraffe.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) resume();
 		camera.on();
 		return;
@@ -177,7 +211,7 @@ function draw() {
 		textAlign(CENTER, CENTER);
 		textSize(28);
 		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
-		player.vel.x = 0;
+		giraffe.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
@@ -195,40 +229,40 @@ function draw() {
 				width / 2,
 				height / 2,
 			);
-			player.vel.x = 0;
+			giraffe.vel.x = 0;
 			camera.on();
 			return;
 		}
 
-		if (gameHasStarted && !penalityApplied) {
-			const nextEnergy = Math.round(random(-3, -1));
-			const dir = Math.round(random([-1, 1]));
+		// if (gameHasStarted && !penalityApplied) {
+		// 	const nextEnergy = Math.round(random(-3, -1));
+		// 	const dir = Math.round(random([-1, 1]));
 
-			penalityApplied = true;
+		// 	penalityApplied = true;
 
-			const expiration = frameCount + 60 * 3; // durée d’affichage du message
+		// 	const expiration = frameCount + 60 * 3; // durée d’affichage du message
 
-			if (dir < 0) {
-				giraffeLife += nextEnergy;
-				MESSAGE.text = `Penality for Giraffe ${nextEnergy}`;
-				MESSAGE.expiration = expiration;
-			} else {
-				robotLife += nextEnergy;
-				MESSAGE.text = `Penality forRobot ${nextEnergy}`;
-				MESSAGE.expiration = expiration;
-			}
-		}
+		// 	if (dir < 0) {
+		// 		giraffeLife += nextEnergy;
+		// 		MESSAGE.text = `Penality for Giraffe ${nextEnergy}`;
+		// 		MESSAGE.expiration = expiration;
+		// 	} else {
+		// 		robotLife += nextEnergy;
+		// 		MESSAGE.text = `Penality forRobot ${nextEnergy}`;
+		// 		MESSAGE.expiration = expiration;
+		// 	}
+		// }
 	} else {
 		penalityApplied = false;
-		player.vel.x = SPEED;
+		giraffe.vel.x = SPEED;
 	}
 
 	// Caméra suit le joueur
-	camera.x = player.x + width * 0.25;
+	camera.x = giraffe.x + width * 0.25;
 	gameHasStarted = true;
 
 	// Saut (seulement si on touche le sol)
-	const onGround = player.colliding(grounds);
+	const onGround = giraffe.colliding(grounds);
 
 	if (kb.pressing("c")) catched = true;
 	if (kb.pressing("s") || kb.pressing("down")) squat = true;
@@ -241,26 +275,26 @@ function draw() {
 		jump = true;
 
 	if (jump && onGround) {
-		player.vel.y = JUMP;
-		player.rotation = 0;
-		player.vel.x = SPEED;
+		giraffe.vel.y = JUMP;
+		giraffe.rotation = 0;
+		giraffe.vel.x = SPEED;
 	}
 
 	if (squat) {
-		player.scale.y = 0.5;
+		giraffe.scale.y = 0.5;
 	} else {
-		player.scale.y = 1;
+		giraffe.scale.y = 1;
 	}
 
 	if (catched) {
-		player.color = "orange";
+		giraffe.scale.x = 1.2;
 	} else {
-		player.color = "yellow";
+		giraffe.scale.x = 1;
 	}
 
 	// Check collision obstacles
 	for (const o of obstacles) {
-		if (player.overlaps(o)) {
+		if (giraffe.overlaps(o)) {
 			const nextEnergy = Math.round(random(-10, -1));
 			const dir = Math.round(random([-1, 1]));
 
@@ -279,7 +313,7 @@ function draw() {
 	}
 
 	for (const t of trees) {
-		if (player.overlaps(t)) {
+		if (giraffe.overlaps(t)) {
 			// Exemple : changer la couleur du player
 			if (shouldFight) fight = true;
 			else if (catched) {
@@ -315,7 +349,11 @@ function draw() {
 
 	spawnClouds();
 
-	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
+	if (
+		giraffeLife <= 0 ||
+		robotLife <= 0 ||
+		giraffe.y > height - giraffe.h / 2
+	) {
 		gameOver = true;
 	}
 }
@@ -368,12 +406,12 @@ function buildLevel() {
 				TILE * 2,
 			);
 			end.collider = "none";
-			end.color = "blue";
-			end.stroke = "lightblue";
+			end.color = END.color;
+			end.stroke = SKY.color;
 			end.rotationLock = true;
 			end.friction = 0;
 			end.bounciness = 0;
-			end.overlaps(player, () => {
+			end.overlaps(giraffe, () => {
 				win = true;
 			}); // assure-toi d’avoir let win = false;
 		}
@@ -423,19 +461,21 @@ function decreaseLife() {
 function drawLife() {
 	camera.off(); // HUD fixe à l’écran
 
-	// Girafe life, top left
-	fill(0, 0, 0, 100);
+	// GIRAFFE
+	fill(GIRAFFE.color);
+	noStroke();
 	rect(12, 12, 150, 46, 8);
-	fill(255);
+	fill(SKY.color);
 	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
 	text(`GIRAFFE: ${giraffeLife}`, 24, 35);
 
-	// Robot life, top right
-	fill(0, 0, 0, 100);
+	// ROBOT
+	fill(ROBOT.color);
+	noStroke();
 	rect(width - 162, 12, 150, 46, 8);
-	fill(255);
+	fill(SKY.color);
 	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
@@ -446,17 +486,18 @@ function drawLife() {
 
 function resume() {
 	fight = false;
-	player.vel.x = SPEED;
+	giraffe.vel.x = SPEED;
 }
 
 function restart() {
 	// Reset joueur
-	player.pos.x = TILE;
-	player.pos.y = height - TILE * 2;
-	player.vel.x = SPEED;
-	player.vel.y = 0;
-	player.rotation = 0;
+	giraffe.pos.x = TILE;
+	giraffe.pos.y = height - TILE * 2;
+	giraffe.vel.x = SPEED;
+	giraffe.vel.y = 0;
+	giraffe.rotation = 0;
 
+	// Reset settings
 	score = 0;
 	gameOver = false;
 	win = false;
@@ -468,7 +509,7 @@ function restart() {
 // Draw treshold indicator
 function drawTresholdIndicator() {
 	camera.off();
-	stroke("red");
+	stroke(INDICATOR.color);
 	noFill();
 	rect(-10, TRESHOLD.jump, 20, 1);
 	rect(-10, TRESHOLD.squat, 20, 1);
@@ -520,9 +561,11 @@ function drawBodyOverlay() {
 
 		catchs.push(shouldCatch);
 
+		const isGiraffe = pose.id === GIRAFFE.id;
+
 		// INDICATORS
 		noStroke();
-		fill(255, 0, 0);
+		fill(isGiraffe ? GIRAFFE.color : ROBOT.color);
 		circle(width, head.y, 20);
 		circle(0, rightHand.y, 20);
 	}
