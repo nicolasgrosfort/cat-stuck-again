@@ -4,8 +4,6 @@ const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
 
-const MIN_PLAYER = 1;
-
 const SIZE = {
 	width: 640,
 	height: 480,
@@ -36,8 +34,11 @@ let player, grounds, obstacles, trees;
 
 let gameOver = false,
 	fight = false,
-	win = false,
-	waitingForPlayers = true;
+	win = false;
+
+let waitingForPlayers = true,
+	gameHasStarted = false,
+	penalityApplied = false;
 
 let squat = false,
 	jump = false,
@@ -181,22 +182,48 @@ function draw() {
 	}
 
 	if (waitingForPlayers) {
-		camera.off();
-		background("lightblue");
-		noStroke();
-		fill(0);
-		textAlign(CENTER, CENTER);
-		textSize(24);
-		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
-		player.vel.x = 0;
-		camera.on();
-		return;
+		if (!gameHasStarted) {
+			camera.off();
+			noStroke();
+			fill(0);
+			textAlign(CENTER, CENTER);
+			textSize(24);
+			text(
+				`Waiting for ${2 - poses.length} player(s)...`,
+				width / 2,
+				height / 2,
+			);
+			player.vel.x = 0;
+			camera.on();
+			return;
+		}
+
+		if (gameHasStarted && !penalityApplied) {
+			const nextEnergy = Math.round(random(-3, -1));
+			const dir = Math.round(random([-1, 1]));
+
+			penalityApplied = true;
+
+			const expiration = frameCount + 60 * 3; // durée d’affichage du message
+
+			if (dir < 0) {
+				giraffeLife += nextEnergy;
+				MESSAGE.text = `Penality for Giraffe ${nextEnergy}`;
+				MESSAGE.expiration = expiration;
+			} else {
+				robotLife += nextEnergy;
+				MESSAGE.text = `Penality forRobot ${nextEnergy}`;
+				MESSAGE.expiration = expiration;
+			}
+		}
 	} else {
+		penalityApplied = false;
 		player.vel.x = SPEED;
 	}
 
 	// Caméra suit le joueur
 	camera.x = player.x + width * 0.25;
+	gameHasStarted = true;
 
 	// Saut (seulement si on touche le sol)
 	const onGround = player.colliding(grounds);
@@ -370,7 +397,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
