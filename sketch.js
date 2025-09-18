@@ -535,18 +535,18 @@ function draw() {
 	for (const t of trees) {
 		if (player.overlaps(t)) {
 			// Exemple : changer la couleur du player
-			if (shouldFight) fight = true;
+			if (shouldFight && t.ressources.length === 2) fight = true;
 			else if (catched) {
 				const nextEnergy = Math.round(random(3, 10));
 				const expiration = frameCount + 60 * 3;
 
 				treeSound.play();
 
-				if (lastCatcher === "giraffe") {
+				if (lastCatcher === "giraffe" && t.ressources.includes("leaf")) {
 					giraffeLife += nextEnergy;
 					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
-				} else if (lastCatcher === "robot") {
+				} else if (lastCatcher === "robot" && t.ressources.includes("cat")) {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
@@ -609,7 +609,9 @@ function buildLevel() {
 		} else if (c === "T") {
 			// TREE
 			const yT = Math.round(yGroundTop - trees.h * 0.5);
-			new trees.Sprite(xCenter, yT);
+			const tree = new trees.Sprite(xCenter, yT);
+
+			tree.ressources = [];
 
 			// Décider indépendamment pour le chat et les feuilles
 			const hasCat = Math.random() < 0.6; // 60% de chance d'avoir un chat
@@ -628,6 +630,8 @@ function buildLevel() {
 				} else {
 					cat.x -= TILE * 0.15; // parfois à gauche
 				}
+
+				tree.ressources.push("cat");
 			}
 
 			if (hasLeaves) {
@@ -641,6 +645,7 @@ function buildLevel() {
 					leaf.scale = random(0.3, 0.6);
 					leaf.rotation = random(-45, 45); // rotation aléatoire
 				}
+				tree.ressources.push("leaf");
 			}
 		} else if (c === "E") {
 			// END
