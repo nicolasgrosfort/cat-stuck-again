@@ -336,8 +336,10 @@ function draw() {
 	if (catched) {
 		player.scale.x = 0.5;
 		player.scale.y = 1.5;
+		player.color = lastCatcher === "giraffe" ? GIRAFFE.color : ROBOT.color;
 	} else {
 		player.scale.x = 1;
+		player.color = PLAYER.color;
 	}
 
 	if (!squat && !catched) {
@@ -489,7 +491,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
