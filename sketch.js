@@ -198,10 +198,57 @@ function draw() {
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(48);
-		text("FIGHT!", width / 2, height / 2);
+		text("HERE!", width / 2, height / 2);
 		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) resume();
+
+		push();
+		translate(width, 0);
+		scale(-1, 1);
+
+		for (const p of poses) {
+			const leftHand = p.keypoints[9];
+
+			const isGiraffe = p.id === GIRAFFE.id;
+
+			noStroke();
+			fill(isGiraffe ? GIRAFFE.color : ROBOT.color);
+			circle(leftHand.x, leftHand.y, 20);
+
+			// Detect if hand is inside a random area
+			const handInArea =
+				leftHand.x > width / 2 - 100 &&
+				leftHand.x < width / 2 + 100 &&
+				leftHand.y > height / 2 - 50 &&
+				leftHand.y < height / 2 + 50;
+
+			// draw area
+			noFill();
+			stroke(255);
+			rect(width / 2 - 100, height / 2 - 50, 200, 100);
+
+			if (handInArea) {
+				const nextEnergy = Math.round(random(3, 10));
+
+				const expiration = frameCount + 60 * 3; // durée d’affichage du message
+
+				if (isGiraffe) {
+					giraffeLife += nextEnergy;
+					MESSAGE.text = `Giraffe ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
+				} else {
+					robotLife += nextEnergy;
+					MESSAGE.text = `Robot ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
+				}
+
+				fight = false;
+			}
+		}
+
+		pop();
 		camera.on();
+
 		return;
 	}
 
