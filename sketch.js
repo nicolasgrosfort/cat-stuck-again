@@ -146,6 +146,15 @@ function setup() {
 	trees.stroke = "lightblue";
 	trees.offset.y = 0; // posé sur le sol
 
+	// Clouds
+	clouds = new Group();
+	clouds.collider = "none";
+	clouds.w = TILE;
+	clouds.h = TILE * 0.5;
+	clouds.color = "white";
+	clouds.stroke = "lightblue";
+	clouds.offset.y = -TILE * 1.5; // dans le ciel
+
 	textFont("monospace");
 
 	buildLevel();
@@ -214,7 +223,7 @@ function draw() {
 		jump = true;
 
 	if (jump && onGround) {
-		player.vel.y = -10;
+		player.vel.y = -12;
 		player.rotation = 0;
 		player.vel.x = SPEED;
 	}
@@ -281,6 +290,8 @@ function draw() {
 	drawBodyOverlay();
 
 	drawTresholdIndicator();
+
+	spawnClouds();
 
 	if (giraffeLife <= 0 || robotLife <= 0 || player.y > height - player.h / 2) {
 		gameOver = true;
@@ -430,4 +441,19 @@ function displayMessage() {
 	textSize(24);
 	text(message.text, width / 2, height / 2);
 	camera.on();
+}
+
+function spawnClouds() {
+	// Spawn de nuages
+	if (frameCount === 10 || frameCount % 180 === 0) {
+		const xSpawn = camera.x + width + random(80, 240);
+		const yTop = random(height * 0.1, height * 0.4);
+
+		new clouds.Sprite(xSpawn, yTop);
+	}
+
+	// Nettoyage des nuages passés derrière la caméra (perf)
+	for (const c of clouds) {
+		if (c.x + c.w < camera.x - width) c.remove();
+	}
 }
