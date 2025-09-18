@@ -741,7 +741,7 @@ function decreaseLife() {
 }
 
 function drawLife() {
-	camera.off(); // HUD fixe à l’écran
+	camera.off(); // HUD fixe à l'écran
 
 	// GIRAFFE
 	noFill();
@@ -763,6 +763,10 @@ function drawLife() {
 	textAlign(LEFT, CENTER);
 	text(`GIRAFFE`, 24, 35);
 
+	// Ajouter l'image de feuille à côté de la jauge de la girafe
+	const leafSize = 30;
+	image(leafImg, 170, 20, leafSize, leafSize);
+
 	// ROBOT
 	noFill();
 	stroke(GIRAFFE.color);
@@ -782,6 +786,10 @@ function drawLife() {
 	textSize(24);
 	textAlign(LEFT, CENTER);
 	text(`ROBOT`, width - 150, 35);
+
+	// Ajouter l'image de chat à côté de la jauge du robot
+	const catSize = 30;
+	image(catImg, width - 200, 20, catSize, catSize);
 
 	camera.on();
 }
