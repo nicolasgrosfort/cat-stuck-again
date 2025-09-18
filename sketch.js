@@ -74,7 +74,8 @@ let gameOver = false,
 	fight = false,
 	win = false;
 
-let waitingForPlayers = true;
+let waitingForPlayers = true,
+	tooManyPlayers = false;
 
 let squat = false,
 	jump = false,
@@ -176,6 +177,7 @@ function draw() {
 	background("lightblue");
 
 	bodyReady();
+	checkIfTooManyPlayers();
 
 	if (win) {
 		camera.off();
@@ -271,7 +273,7 @@ function draw() {
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
-		textSize(24);
+		textSize(28);
 		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
 		player.vel.x = 0;
 		camera.on();
@@ -279,6 +281,18 @@ function draw() {
 	} else {
 		penalityApplied = false;
 		player.vel.x = SPEED;
+	}
+
+	if (tooManyPlayers) {
+		camera.off();
+		noStroke();
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(28);
+		text(`Too many players!`, width / 2, height / 2);
+		player.vel.x = 0;
+		camera.on();
+		return;
 	}
 
 	// Caméra suit le joueur
@@ -466,6 +480,15 @@ function bodyReady() {
 
 	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
+}
+
+// Detect if there are more than 2 players
+function checkIfTooManyPlayers() {
+	if (poses.length > 2) {
+		tooManyPlayers = true;
+	} else {
+		tooManyPlayers = false;
+	}
 }
 
 function gotPoses(results) {
