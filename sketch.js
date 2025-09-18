@@ -47,6 +47,8 @@ let squat = false,
 let shouldFight = false,
 	jumpArmed = true;
 
+let lastCatcher = null; // "giraffe" | "robot" | null
+
 let bodyPose,
 	poses = [];
 
@@ -282,18 +284,22 @@ function draw() {
 			if (shouldFight) fight = true;
 			else if (catched) {
 				const nextEnergy = Math.round(random(1, 5));
-				const dir = Math.round(random([-1, 1]));
+				const expiration = frameCount + 60 * 3;
 
-				const expiration = frameCount + 60 * 3; // durée d’affichage du message
-
-				if (dir < 0) {
+				if (lastCatcher === "giraffe") {
 					giraffeLife += nextEnergy;
-					MESSAGE.text = `Giraffe ${nextEnergy}`;
+					MESSAGE.text = `Giraffe +${nextEnergy}`;
+					MESSAGE.expiration = expiration;
+				} else if (lastCatcher === "robot") {
+					robotLife += nextEnergy;
+					MESSAGE.text = `Robot +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
 				} else {
-					robotLife += nextEnergy;
-					MESSAGE.text = `Robot ${nextEnergy}`;
-					MESSAGE.expiration = expiration;
+					// Cas ambigu (les deux catchent ou aucun identifié) : pas de points ici
+					// Tu peux aussi choisir de splitter, mais comme tu as "fight" pour les deux,
+					// c’est plus clair de ne rien donner dans ce cas.
+					// MESSAGE.text = `No points (both/none)`;
+					// MESSAGE.expiration = expiration;
 				}
 			}
 		}
@@ -387,7 +393,7 @@ function bodyReady() {
 	ROBOT.id = null;
 
 	poses.forEach((p) => {
-		const isGiraffe = p.nose.x < SIZE.width / 2;
+		const isGiraffe = p.nose.x > SIZE.width / 2;
 		if (isGiraffe) {
 			GIRAFFE.isActive = true;
 			if (!GIRAFFE.id) GIRAFFE.id = p.id;
@@ -525,26 +531,53 @@ function drawBodyOverlay() {
 	camera.on();
 
 	// --- Déclenchement "edge" du jump ---
-	// On saute UNE FOIS quand toutes les têtes passent au-dessus du seuil ET que c'est armé.
 	if (jumpArmed && allHeadsAboveJump && poses.length > 0) {
-		jump = true; // évènement instantané : true seulement ce frame
-		jumpArmed = false; // se désarme : il faudra redescendre pour réarmer
+		jump = true;
+		jumpArmed = false;
 	} else {
-		jump = false; // pas d'évènement ce frame
+		jump = false;
 	}
 
-	// Réarmement : toutes les têtes doivent être repassées sous (>=) le seuil
 	if (allHeadsBelowOrEqualJump && poses.length > 0) {
 		jumpArmed = true;
 	}
 
 	// Le reste de tes états
 	squat = shouldSquat && poses.length > 0;
-	const shouldCatchAll = catchs.every(Boolean);
-	catched = shouldCatchAll && poses.length > 0;
 
-	// Exemple de logique "fight" que tu avais
-	shouldFight = shouldCatchAll && poses.length > 1;
+	// On détermine quel·le joueur·se a catché
+	// On reconstruit giraffeCatch / robotCatch depuis les poses lues
+	let giraffeCatch = false;
+	let robotCatch = false;
+
+	for (let i = 0; i < poses.length; i++) {
+		const pose = poses[i];
+		const rightHand = pose.keypoints[10];
+		const isCatching = rightHand.y > 0 && rightHand.y <= TRESHOLD.catch;
+
+		// On mappe grâce aux IDs détectés dans bodyReady()
+		if (pose.id === GIRAFFE.id) {
+			giraffeCatch = giraffeCatch || isCatching;
+		} else if (pose.id === ROBOT.id) {
+			robotCatch = robotCatch || isCatching;
+		} else {
+			// Si jamais un ID n'était pas encore fixé, fallback gauche/droite (optionnel)
+			const isGiraffeSide = pose.nose?.x < SIZE.width / 2;
+			if (isGiraffeSide) giraffeCatch = giraffeCatch || isCatching;
+			else robotCatch = robotCatch || isCatching;
+		}
+	}
+
+	// État global : au moins un catch ?
+	catched = (giraffeCatch || robotCatch) && poses.length > 0;
+
+	// Qui a catché ?
+	if (giraffeCatch && !robotCatch) lastCatcher = "giraffe";
+	else if (robotCatch && !giraffeCatch) lastCatcher = "robot";
+	else lastCatcher = null; // les deux ou aucun
+
+	// Fight si les deux catchent en même temps (tu l’avais déjà)
+	shouldFight = giraffeCatch && robotCatch && poses.length > 1;
 
 	// nettoyage local
 	catchs = [];
