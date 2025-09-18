@@ -292,7 +292,7 @@ function draw() {
 	displayMessage();
 	decreaseLife();
 
-	drawHUD();
+	drawLife();
 	drawBodyOverlay();
 
 	drawTresholdIndicator();
@@ -317,7 +317,7 @@ function decreaseLife() {
 		frameCount % 10 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
 }
 
-function drawHUD() {
+function drawLife() {
 	camera.off(); // HUD fixe à l’écran
 
 	// Girafe life, top left
