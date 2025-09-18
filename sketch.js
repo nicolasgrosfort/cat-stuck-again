@@ -74,7 +74,8 @@ let gameOver = false,
 	fight = false,
 	win = false;
 
-let waitingForPlayers = true;
+let waitingForPlayers = true,
+	tooManyPlayers = false;
 
 let squat = false,
 	jump = false,
@@ -92,7 +93,7 @@ let giraffeLife = LIFE,
 	robotLife = LIFE;
 
 const levelLines = [
-	"--------------T-----O----HH-----T---O--T-----O-----T-O---HH---T----O----T---O----T-------H-----HH--O------E",
+	"-------T-------T-----O----HH--T--T---O--T---T--O---T--T-O---HH---T----O----T---O----T---T----H-----HH--O---T---E",
 ];
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -187,6 +188,7 @@ function draw() {
 	background(backgroundImg);
 
 	bodyReady();
+	checkIfTooManyPlayers();
 
 	if (win) {
 		camera.off();
@@ -209,10 +211,57 @@ function draw() {
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(48);
-		text("FIGHT!", width / 2, height / 2);
+		text("HERE!", width / 2, height / 2);
 		player.vel.x = 0;
 		if (mouse.presses() || kb.presses("r")) resume();
+
+		push();
+		translate(width, 0);
+		scale(-1, 1);
+
+		for (const p of poses) {
+			const leftHand = p.keypoints[9];
+
+			const isGiraffe = p.id === GIRAFFE.id;
+
+			noStroke();
+			fill(isGiraffe ? GIRAFFE.color : ROBOT.color);
+			circle(leftHand.x, leftHand.y, 20);
+
+			// Detect if hand is inside a random area
+			const handInArea =
+				leftHand.x > width / 2 - 100 &&
+				leftHand.x < width / 2 + 100 &&
+				leftHand.y > height / 2 - 50 &&
+				leftHand.y < height / 2 + 50;
+
+			// draw area
+			noFill();
+			stroke(255);
+			rect(width / 2 - 100, height / 2 - 50, 200, 100);
+
+			if (handInArea) {
+				const nextEnergy = Math.round(random(3, 10));
+
+				const expiration = frameCount + 60 * 3; // durée d’affichage du message
+
+				if (isGiraffe) {
+					giraffeLife += nextEnergy;
+					MESSAGE.text = `Giraffe ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
+				} else {
+					robotLife += nextEnergy;
+					MESSAGE.text = `Robot ${nextEnergy}`;
+					MESSAGE.expiration = expiration;
+				}
+
+				fight = false;
+			}
+		}
+
+		pop();
 		camera.on();
+
 		return;
 	}
 
@@ -235,7 +284,7 @@ function draw() {
 		noStroke();
 		fill(0);
 		textAlign(CENTER, CENTER);
-		textSize(24);
+		textSize(28);
 		text(`Waiting for ${2 - poses.length} player(s)...`, width / 2, height / 2);
 		player.vel.x = 0;
 		camera.on();
@@ -243,6 +292,18 @@ function draw() {
 	} else {
 		penalityApplied = false;
 		player.vel.x = SPEED;
+	}
+
+	if (tooManyPlayers) {
+		camera.off();
+		noStroke();
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(28);
+		text(`Too many players!`, width / 2, height / 2);
+		player.vel.x = 0;
+		camera.on();
+		return;
 	}
 
 	// Caméra suit le joueur
@@ -428,8 +489,17 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
+}
+
+// Detect if there are more than 2 players
+function checkIfTooManyPlayers() {
+	if (poses.length > 2) {
+		tooManyPlayers = true;
+	} else {
+		tooManyPlayers = false;
+	}
 }
 
 function gotPoses(results) {
@@ -613,7 +683,11 @@ function drawBodyOverlay() {
 	}
 
 	// État global : au moins un catch ?
-	catched = (giraffeCatch || robotCatch) && poses.length > 0;
+	catched =
+		(giraffeCatch || robotCatch) &&
+		poses.length > 0 &&
+		!squat &&
+		!allHeadsAboveJump;
 
 	// Qui a catché ?
 	if (giraffeCatch && !robotCatch) lastCatcher = "giraffe";
