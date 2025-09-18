@@ -747,49 +747,58 @@ function drawLife() {
 	noFill();
 	stroke(GIRAFFE.color);
 	strokeWeight(2);
-	rect(12, 12, 150, 46);
+	rect(20, 20, 150, 46);
 
-	noFill();
-	stroke(GIRAFFE.color);
-	rect(12, 12, 150, 46);
-	fill(GIRAFFE.color);
-	noStroke();
-	const giraffeLifeWidth = map(giraffeLife, 0, LIFE, 0, 150);
-	rect(12, 12, giraffeLifeWidth, 46);
-
-	fill(255);
-	noStroke();
-	textSize(24);
-	textAlign(LEFT, CENTER);
-	text(`GIRAFFE`, 24, 35);
-
-	// Ajouter l'image de feuille à côté de la jauge de la girafe
-	const leafSize = 30;
-	image(leafImg, 170, 20, leafSize, leafSize);
-
-	// ROBOT
 	noFill();
 	stroke(GIRAFFE.color);
 	strokeWeight(2);
-	rect(width - 162, 12, 150, 46);
+	rect(20, 20, 150, 46);
 
-	noFill();
-	stroke(ROBOT.color);
-	rect(width - 162, 12, 150, 46);
-	fill(ROBOT.color);
+	fill(GIRAFFE.color);
 	noStroke();
-	const robotLifeWidth = map(robotLife, 0, LIFE, 0, 150);
-	rect(width - 162, 12, robotLifeWidth, 46);
+	const giraffeLifeWidth = map(giraffeLife, 0, LIFE, 0, 150);
+	rect(20, 20, giraffeLifeWidth, 46);
 
 	fill(255);
 	noStroke();
 	textSize(24);
 	textAlign(LEFT, CENTER);
-	text(`ROBOT`, width - 150, 35);
+	text(`GIRAFFE`, 30, 45);
+
+	image(
+		GIRAFFE.alone,
+		180,
+		10,
+		GIRAFFE.alone.width * 0.2,
+		GIRAFFE.alone.height * 0.2,
+	);
+
+	// ROBOT
+
+	noFill();
+	stroke(ROBOT.color);
+	strokeWeight(2);
+
+	rect(width - 170, 20, 150, 46);
+	fill(ROBOT.color);
+	noStroke();
+	const robotLifeWidth = map(robotLife, 0, LIFE, 0, 150);
+	rect(width - 170, 20, robotLifeWidth, 46);
+
+	fill(255);
+	noStroke();
+	textSize(24);
+	textAlign(LEFT, CENTER);
+	text(`ROBOT`, width - 150, 40);
 
 	// Ajouter l'image de chat à côté de la jauge du robot
-	const catSize = 30;
-	image(catImg, width - 200, 20, catSize, catSize);
+	image(
+		ROBOT.alone,
+		width - 200,
+		25,
+		ROBOT.alone.width * 0.2,
+		ROBOT.alone.height * 0.2,
+	);
 
 	camera.on();
 }
