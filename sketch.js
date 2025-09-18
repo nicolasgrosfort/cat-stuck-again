@@ -155,7 +155,7 @@ function setup() {
 	playerImage.friction = 0;
 	playerImage.bounciness = 0;
 	playerImage.collider = "none";
-	playerImage.layer = -1;
+	playerImage.layer = 10;
 
 	// Grounds
 	grounds = new Group();
@@ -195,7 +195,6 @@ function setup() {
 	trees.color = TREE.color;
 	trees.stroke = SKY.color;
 	trees.offset.y = 0; // posé sur le sol
-	playerImage.layer = 10;
 
 	// Clouds
 	clouds = new Group();
