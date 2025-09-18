@@ -143,7 +143,7 @@ function setup() {
 	//visualGrounds.stroke = SKY.color;
 	visualGrounds.h = TILE * 0.5;
 	visualGrounds.w = TILE;
-	visualGroundsImg.resize(visualGrounds.w*2, visualGrounds.h*2); // resize to group size
+	visualGroundsImg.resize(visualGrounds.w * 2, visualGrounds.h * 2); // resize to group size
 	visualGrounds.image = visualGroundsImg;
 	visualGrounds.bounciness = 0;
 
@@ -154,7 +154,7 @@ function setup() {
 	obstacles.h = TILE * 0.5;
 	//obstacles.color = OBSTACLE.color;
 	//obstacles.stroke = SKY.color;
-	birdImg.resize(obstacles.w*2, obstacles.h*2);
+	birdImg.resize(obstacles.w * 2, obstacles.h * 2);
 	obstacles.image = birdImg;
 	obstacles.offset.y = -obstacles.h / 2; // posé sur le sol
 
@@ -336,7 +336,9 @@ function draw() {
 	if (catched) {
 		player.scale.x = 0.5;
 		player.scale.y = 1.5;
-		player.color = lastCatcher === "giraffe" ? GIRAFFE.color : ROBOT.color;
+
+		if (shouldFight) player.color = "red";
+		else player.color = lastCatcher === "giraffe" ? GIRAFFE.color : ROBOT.color;
 	} else {
 		player.scale.x = 1;
 		player.color = PLAYER.color;
