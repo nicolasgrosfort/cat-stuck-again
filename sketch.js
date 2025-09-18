@@ -545,8 +545,9 @@ function drawLife() {
 	camera.off(); // HUD fixe à l’écran
 
 	// GIRAFFE
-	fill(SKY.color);
-	noStroke();
+	noFill();
+	stroke(GIRAFFE.color);
+	strokeWeight(2);
 	rect(12, 12, 150, 46);
 
 	noFill();
@@ -557,15 +558,16 @@ function drawLife() {
 	const giraffeLifeWidth = map(giraffeLife, 0, LIFE, 0, 150);
 	rect(12, 12, giraffeLifeWidth, 46);
 
-	fill(0);
+	fill(255);
 	noStroke();
-	textSize(16);
+	textSize(20);
 	textAlign(LEFT, CENTER);
-	text(`GIRAFFE: ${giraffeLife}`, 24, 35);
+	text(`GIRAFFE`, 24, 35);
 
 	// ROBOT
-	fill(SKY.color);
-	noStroke();
+	noFill();
+	stroke(GIRAFFE.color);
+	strokeWeight(2);
 	rect(width - 162, 12, 150, 46);
 
 	noFill();
@@ -576,11 +578,11 @@ function drawLife() {
 	const robotLifeWidth = map(robotLife, 0, LIFE, 0, 150);
 	rect(width - 162, 12, robotLifeWidth, 46);
 
-	fill(0);
+	fill(255);
 	noStroke();
-	textSize(16);
+	textSize(20);
 	textAlign(LEFT, CENTER);
-	text(`ROBOT: ${robotLife}`, width - 150, 35);
+	text(`ROBOT`, width - 150, 35);
 
 	camera.on();
 }
