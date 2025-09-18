@@ -10,9 +10,9 @@ const SIZE = {
 };
 
 const TRESHOLD = {
-	jump: SIZE.height * 0.4,
-	catch: SIZE.height * 0.5,
-	squat: SIZE.height * 0.6,
+	jump: null,
+	catch: null,
+	squat: null,
 };
 
 const PLAYER = {
@@ -126,6 +126,7 @@ function preload() {
 	song = loadAudio("/audios/song.mp3");
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: <>
 function mousePressed() {
 	song.play();
 
@@ -134,13 +135,17 @@ function mousePressed() {
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
-	new Canvas(SIZE.width, SIZE.height);
+	new Canvas(windowWidth, windowHeight);
 	noSmooth();
 
 	textFont(minecraftFont);
 
+	TRESHOLD.jump = windowHeight * 0.4;
+	TRESHOLD.catch = windowHeight * 0.5;
+	TRESHOLD.squat = windowHeight * 0.6;
+
 	video = createCapture(VIDEO);
-	video.size(SIZE.width, SIZE.height);
+	video.size(windowWidth, windowHeight);
 	video.hide();
 	bodyPose.detectStart(video, gotPoses);
 
@@ -535,7 +540,7 @@ function bodyReady() {
 	ROBOT.id = null;
 
 	poses.forEach((p) => {
-		const isGiraffe = p.nose.x > SIZE.width / 2;
+		const isGiraffe = p.nose.x > windowWidth / 2;
 		if (isGiraffe) {
 			GIRAFFE.isActive = true;
 			if (!GIRAFFE.id) GIRAFFE.id = p.id;
@@ -747,7 +752,7 @@ function drawBodyOverlay() {
 			robotCatch = robotCatch || isCatching;
 		} else {
 			// Si jamais un ID n'était pas encore fixé, fallback gauche/droite (optionnel)
-			const isGiraffeSide = pose.nose?.x < SIZE.width / 2;
+			const isGiraffeSide = pose.nose?.x < windowWidth / 2;
 			if (isGiraffeSide) giraffeCatch = giraffeCatch || isCatching;
 			else robotCatch = robotCatch || isCatching;
 		}
