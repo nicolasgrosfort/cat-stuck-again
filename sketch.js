@@ -58,7 +58,15 @@ const MESSAGE = {
 	expiration: 0,
 };
 
-let player, grounds, obstacles, trees, clouds, playerImage, bushes;
+let player,
+	grounds,
+	obstacles,
+	trees,
+	clouds,
+	playerImage,
+	bushes,
+	cats,
+	leaves;
 
 let gameOver = false,
 	fight = false,
@@ -243,6 +251,22 @@ function setup() {
 	bushes = new Group();
 	bushes.collider = "none";
 	bushes.image = bushesImg1;
+
+	// Cats in trees
+	cats = new Group();
+	cats.collider = "none";
+	cats.w = TILE * 0.3;
+	cats.h = TILE * 0.3;
+	cats.image = catImg;
+	cats.layer = 1; // devant les arbres
+
+	// Leaves in trees
+	leaves = new Group();
+	leaves.collider = "none";
+	leaves.w = TILE * 0.2;
+	leaves.h = TILE * 0.2;
+	leaves.image = leafImg;
+	leaves.layer = 1; // devant les arbres
 
 	buildLevel();
 }
@@ -586,6 +610,38 @@ function buildLevel() {
 			// TREE
 			const yT = Math.round(yGroundTop - trees.h * 0.5);
 			new trees.Sprite(xCenter, yT);
+
+			// Décider indépendamment pour le chat et les feuilles
+			const hasCat = Math.random() < 0.6; // 60% de chance d'avoir un chat
+			const hasLeaves = Math.random() < 0.6; // 60% de chance d'avoir des feuilles
+
+			if (hasCat) {
+				const cat = new cats.Sprite(
+					xCenter + random(-TILE * 0.2, TILE * 0.2), // position légèrement aléatoire
+					yT - TILE * 0.8, // position dans la couronne de l'arbre
+				);
+				cat.scale = 0.3; // taille légèrement variable
+
+				// Variation aléatoire de la position du chat
+				if (Math.random() < 0.5) {
+					cat.x += TILE * 0.15; // parfois à droite
+				} else {
+					cat.x -= TILE * 0.15; // parfois à gauche
+				}
+			}
+
+			if (hasLeaves) {
+				// Ajouter plusieurs feuilles pour un effet plus naturel
+				const numLeaves = 1;
+				for (let i = 0; i < numLeaves; i++) {
+					const leaf = new leaves.Sprite(
+						xCenter + random(-TILE * 0.3, TILE * 0.3),
+						yT + random(-TILE * 0.9, -TILE * 0.1),
+					);
+					leaf.scale = random(0.3, 0.6);
+					leaf.rotation = random(-45, 45); // rotation aléatoire
+				}
+			}
 		} else if (c === "E") {
 			// END
 			const end = new Sprite(
