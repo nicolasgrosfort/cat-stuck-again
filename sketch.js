@@ -1,3 +1,20 @@
+const TILE = 100;
+const SPEED = 6;
+const JUMP = -12;
+const LIFE = 100;
+const GRAVITY = 30;
+
+const SIZE = {
+	width: 640,
+	height: 480,
+};
+
+const TRESHOLD = {
+	jump: SIZE.height * 0.4,
+	catch: SIZE.height * 0.5,
+	squat: SIZE.height * 0.6,
+};
+
 let player, grounds, obstacles, trees;
 let gameOver = false;
 let squat = false;
@@ -9,26 +26,13 @@ let fight = false;
 let bodyPose;
 let poses = [];
 
-const TILE = 100;
-
 const message = {
 	text: "",
 	expiration: 0,
 };
 
-let giraffeLife = 100,
-	robotLife = 100;
-
-const size = {
-	width: 640,
-	height: 480,
-};
-
-const SPEED = 6;
-
-const tresholdJump = size.height * 0.4;
-const tresholdCatch = size.height * 0.5;
-const tresholdSquat = size.height * 0.6;
+let giraffeLife = LIFE,
+	robotLife = LIFE;
 
 const levelLines = [
 	"--------------T-----O---HH-----T-O--T-----O-----TO---HH---T----O----T---O----T-------H-----HH--O------E",
@@ -75,9 +79,11 @@ function buildLevel() {
 			const yO = Math.round(yGroundTop - obstacles.h * 2);
 			new obstacles.Sprite(xCenter, yO);
 		} else if (c === "T") {
+			// TREE
 			const yT = Math.round(yGroundTop - trees.h * 0.5);
 			new trees.Sprite(xCenter, yT);
 		} else if (c === "E") {
+			// END
 			const end = new Sprite(
 				xCenter,
 				Math.round(yGroundTop - TILE),
@@ -99,16 +105,16 @@ function buildLevel() {
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
-	new Canvas(size.width, size.height);
+	new Canvas(SIZE.width, SIZE.height);
 	noSmooth();
 
 	video = createCapture(VIDEO);
-	video.size(size.width, size.height);
+	video.size(SIZE.width, SIZE.height);
 	video.hide();
 	bodyPose.detectStart(video, gotPoses);
 
 	// World
-	world.gravity.y = 30;
+	world.gravity.y = GRAVITY;
 
 	// Player
 	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
@@ -223,7 +229,7 @@ function draw() {
 		jump = true;
 
 	if (jump && onGround) {
-		player.vel.y = -12;
+		player.vel.y = JUMP;
 		player.rotation = 0;
 		player.vel.x = SPEED;
 	}
@@ -352,8 +358,8 @@ function restart() {
 	gameOver = false;
 	win = false;
 	fight = false;
-	giraffeLife = 100;
-	robotLife = 100;
+	giraffeLife = LIFE;
+	robotLife = LIFE;
 }
 
 // Draw treshold indicator
@@ -361,9 +367,9 @@ function drawTresholdIndicator() {
 	camera.off();
 	stroke("red");
 	noFill();
-	rect(-10, tresholdJump, 20, 1);
-	rect(-10, tresholdSquat, 20, 1);
-	rect(width - 10, tresholdCatch, 20, 1);
+	rect(-10, TRESHOLD.jump, 20, 1);
+	rect(-10, TRESHOLD.squat, 20, 1);
+	rect(width - 10, TRESHOLD.catch, 20, 1);
 	camera.on();
 }
 
@@ -390,16 +396,16 @@ function drawBodyOverlay() {
 		rightHand = pose.keypoints[10];
 
 		// Gestion du jump : toutes les têtes doivent être au-dessus du seuil
-		if (head.y >= tresholdJump && head.y > 0) {
+		if (head.y >= TRESHOLD.jump && head.y > 0) {
 			shouldJump = false;
 		}
 
 		// Gestion du squat : toutes les têtes doivent être en-dessous du seuil
-		if (head.y <= tresholdSquat && head.y > 0) {
+		if (head.y <= TRESHOLD.squat && head.y > 0) {
 			shouldSquat = false;
 		}
 
-		if (rightHand.y <= tresholdCatch && rightHand.y > 0) {
+		if (rightHand.y <= TRESHOLD.catch && rightHand.y > 0) {
 			shouldCatch = true;
 		} else {
 			shouldCatch = false;
@@ -425,7 +431,7 @@ function drawBodyOverlay() {
 	catched = shouldCatch && poses.length > 0;
 	squat = shouldSquat && poses.length > 0;
 
-	shouldFight = catchs.every((c) => c) && poses.length > 0; // switch to 1 to handle 2 player
+	shouldFight = catchs.every((c) => c) && poses.length > 1; // switch to 1 to handle 2 player
 
 	catchs = [];
 }
