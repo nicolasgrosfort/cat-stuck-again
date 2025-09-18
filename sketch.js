@@ -4,11 +4,6 @@ const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
 
-const SIZE = {
-	width: 640,
-	height: 480,
-};
-
 const TRESHOLD = {
 	jump: null,
 	catch: null,
@@ -46,10 +41,6 @@ const CLOUD = {
 	color: "white",
 };
 
-const OBSTACLE = {
-	color: "brown",
-};
-
 const GROUND = {
 	color: "brown",
 };
@@ -60,10 +51,6 @@ const TREE = {
 
 const END = {
 	color: "grey",
-};
-
-const OVER = {
-	color: "black",
 };
 
 const INDICATOR = {
@@ -102,7 +89,7 @@ let giraffeLife = LIFE,
 let minecraftFont;
 
 const levelLines = [
-	"-------T-------T-----O----HH--T--T---O--T---T--O---T--T-O---HH---T----O----T---O----T---T----H-----HH--O---T---E",
+	"-------T-------T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H-----HH--O---T---E",
 ];
 
 let song;
