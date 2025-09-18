@@ -1,6 +1,6 @@
 const TILE = 100;
-const SPEED = 6;
-const JUMP = -12;
+const SPEED = 5;
+const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
 
@@ -311,11 +311,11 @@ function gotPoses(results) {
 
 function decreaseLife() {
 	giraffeLife =
-		frameCount % 10 === 0
+		frameCount % 20 === 0
 			? giraffeLife - Math.round(random([0, 1]))
 			: giraffeLife;
 	robotLife =
-		frameCount % 10 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
+		frameCount % 20 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
 }
 
 function drawLife() {
