@@ -100,6 +100,9 @@ const levelLines = [
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
+	visualGroundsImg = loadImage("assets/ground.png");
+	treesImg = loadImage("assets/tree.png");
+	cloudsImg = loadImage("assets/cloud.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -139,6 +142,8 @@ function setup() {
 	visualGrounds.stroke = SKY.color;
 	visualGrounds.h = TILE * 0.5;
 	visualGrounds.w = TILE;
+	visualGroundsImg.resize(visualGrounds.w*2, visualGrounds.h*2); // resize to group size
+	visualGrounds.image = visualGroundsImg;
 	visualGrounds.bounciness = 0;
 
 	// Obstacles
@@ -155,6 +160,7 @@ function setup() {
 	trees.collider = "none";
 	trees.w = TILE * 0.5;
 	trees.h = TILE * 2;
+	trees.image = treesImg;
 	trees.color = TREE.color;
 	trees.stroke = SKY.color;
 	trees.offset.y = 0; // posé sur le sol
@@ -164,6 +170,7 @@ function setup() {
 	clouds.collider = "none";
 	clouds.w = TILE;
 	clouds.h = TILE * 0.5;
+	clouds.image = cloudsImg;
 	clouds.color = CLOUD.color;
 	clouds.stroke = SKY.color;
 	clouds.offset.y = -TILE * 1.5; // dans le ciel
