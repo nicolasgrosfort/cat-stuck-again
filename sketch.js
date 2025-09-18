@@ -74,9 +74,7 @@ let gameOver = false,
 	fight = false,
 	win = false;
 
-let waitingForPlayers = true,
-	gameHasStarted = false,
-	penalityApplied = false;
+let waitingForPlayers = true;
 
 let squat = false,
 	jump = false,
@@ -94,7 +92,7 @@ let giraffeLife = LIFE,
 	robotLife = LIFE;
 
 const levelLines = [
-	"--------------T-----O---HH-----T-O--T-----O-----TO---HH---T----O----T---O----T-------H-----HH--O------E",
+	"--------------T-----O----HH-----T---O--T-----O-----T-O---HH---T----O----T---O----T-------H-----HH--O------E",
 ];
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -261,14 +259,17 @@ function draw() {
 
 	if (squat) {
 		player.scale.y = 0.5;
-	} else {
-		player.scale.y = 1;
 	}
 
 	if (catched) {
-		player.scale.x = 1.2;
+		player.scale.x = 0.5;
+		player.scale.y = 1.5;
 	} else {
 		player.scale.x = 1;
+	}
+
+	if (!squat && !catched) {
+		player.scale.y = 1;
 	}
 
 	// Check collision obstacles
@@ -426,31 +427,49 @@ function gotPoses(results) {
 
 function decreaseLife() {
 	giraffeLife =
-		frameCount % 20 === 0
+		frameCount % 10 === 0
 			? giraffeLife - Math.round(random([0, 1]))
 			: giraffeLife;
 	robotLife =
-		frameCount % 20 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
+		frameCount % 10 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
 }
 
 function drawLife() {
 	camera.off(); // HUD fixe à l’écran
 
 	// GIRAFFE
-	fill(GIRAFFE.color);
+	fill(SKY.color);
 	noStroke();
 	rect(12, 12, 150, 46);
-	fill(SKY.color);
+
+	noFill();
+	stroke(GIRAFFE.color);
+	rect(12, 12, 150, 46);
+	fill(GIRAFFE.color);
+	noStroke();
+	const giraffeLifeWidth = map(giraffeLife, 0, LIFE, 0, 150);
+	rect(12, 12, giraffeLifeWidth, 46);
+
+	fill(0);
 	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
 	text(`GIRAFFE: ${giraffeLife}`, 24, 35);
 
 	// ROBOT
-	fill(ROBOT.color);
+	fill(SKY.color);
 	noStroke();
 	rect(width - 162, 12, 150, 46);
-	fill(SKY.color);
+
+	noFill();
+	stroke(ROBOT.color);
+	rect(width - 162, 12, 150, 46);
+	fill(ROBOT.color);
+	noStroke();
+	const robotLifeWidth = map(robotLife, 0, LIFE, 0, 150);
+	rect(width - 162, 12, robotLifeWidth, 46);
+
+	fill(0);
 	noStroke();
 	textSize(16);
 	textAlign(LEFT, CENTER);
@@ -529,10 +548,6 @@ function drawBodyOverlay() {
 
 		// CATCH
 		const shouldCatch = rightHand.y > 0 && rightHand.y <= TRESHOLD.catch;
-
-		console.log(
-			shouldCatch && (pose.id === GIRAFFE.id ? "GIRAFFE Catch" : "ROBOT Catch"),
-		);
 
 		catchs.push(shouldCatch);
 
