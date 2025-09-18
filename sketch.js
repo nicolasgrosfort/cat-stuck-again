@@ -92,7 +92,7 @@ let giraffeLife = LIFE,
 	robotLife = LIFE;
 
 const levelLines = [
-	"--------------T-----O----HH-----T---O--T-----O-----T-O---HH---T----O----T---O----T-------H-----HH--O------E",
+	"-------T-------T-----O----HH--T--T---O--T---T--O---T--T-O---HH---T----O----T---O----T---T----H-----HH--O---T---E",
 ];
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -417,7 +417,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
