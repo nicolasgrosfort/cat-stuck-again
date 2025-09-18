@@ -183,12 +183,24 @@ function setup() {
 	buildLevel();
 }
 
+function handleRestart() {
+	if (mouse.presses() || kb.presses("r")) restart();
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: <>
+function keyPressed() {
+	if (key === "r") {
+		loop();
+		restart();
+	}
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function draw() {
 	background(backgroundImg);
-
 	bodyReady();
 	checkIfTooManyPlayers();
+	handleRestart();
 
 	if (win) {
 		camera.off();
@@ -199,7 +211,6 @@ function draw() {
 		textSize(48);
 		text("YOU WIN!", width / 2, height / 2);
 		player.vel.x = 0;
-		if (mouse.presses() || kb.presses("r")) restart();
 		camera.on();
 		return;
 	}
@@ -213,8 +224,6 @@ function draw() {
 		textSize(48);
 		text("HERE!", width / 2, height / 2);
 		player.vel.x = 0;
-		if (mouse.presses() || kb.presses("r")) resume();
-
 		push();
 		translate(width, 0);
 		scale(-1, 1);
@@ -274,8 +283,10 @@ function draw() {
 		textSize(28);
 		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
 		player.vel.x = 0;
-		if (mouse.presses() || kb.presses("r")) restart();
+
 		camera.on();
+
+		noLoop();
 		return;
 	}
 
@@ -563,11 +574,6 @@ function drawLife() {
 	camera.on();
 }
 
-function resume() {
-	fight = false;
-	player.vel.x = SPEED;
-}
-
 function restart() {
 	// Reset joueur
 	player.pos.x = TILE;
@@ -575,6 +581,8 @@ function restart() {
 	player.vel.x = SPEED;
 	player.vel.y = 0;
 	player.rotation = 0;
+
+	camera.x = player.x + width * 0.25;
 
 	// Reset settings
 	score = 0;
