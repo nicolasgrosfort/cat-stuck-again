@@ -226,6 +226,7 @@ function setup() {
 	trees.color = TREE.color;
 	trees.stroke = SKY.color;
 	trees.offset.y = 0; // posé sur le sol
+	trees.layer = -1; // derrière le player
 
 	// Clouds
 	clouds = new Group();
@@ -569,7 +570,7 @@ function buildLevel() {
 	}
 
 	// --- B) OBJETS (O/T/E) : positionnés colonne par colonne ---
-	for (let col = 0; col < line.length; col++) {
+	for (let col = -10; col < line.length; col++) {
 		const c = line[col];
 		const xCenter = Math.round(col * TILE + TILE * 0.5);
 		const yGroundTop = Math.round(height - grounds.h);
