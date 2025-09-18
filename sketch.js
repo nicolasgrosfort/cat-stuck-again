@@ -618,6 +618,9 @@ function restart() {
 
 	camera.x = player.x + width * 0.25;
 
+	MESSAGE.text = "";
+	MESSAGE.expiration = 0;
+
 	// Reset settings
 	score = 0;
 	gameOver = false;
