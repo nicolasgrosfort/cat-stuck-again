@@ -110,21 +110,25 @@ function preload() {
 	GIRAFFE.catchRobot = loadImage("assets/robot-catch.png");
 	GIRAFFE.catch = loadImage("assets/players-catch.png");
 	minecraftFont = loadFont("fonts/minecraft.ttf");
-	song = loadAudio("/audios/song.mp3");
+	song = loadSound("/audios/song.mp3");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function mousePressed() {
-	song.play();
-
-	console.log("click");
+	if (isLooping()) {
+		song.pause();
+		noLoop();
+	} else {
+		song.play();
+		loop();
+	}
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
 	new Canvas(windowWidth, windowHeight);
 	noSmooth();
-
+	noLoop();
 	textFont(minecraftFont);
 
 	TRESHOLD.jump = windowHeight * 0.4;
@@ -211,7 +215,7 @@ function setup() {
 }
 
 function handleRestart() {
-	if (mouse.presses() || kb.presses("r")) restart();
+	if (kb.presses("r")) restart();
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -228,6 +232,17 @@ function draw() {
 	bodyReady();
 	checkIfTooManyPlayers();
 	handleRestart();
+
+	if (!isLooping()) {
+		camera.off();
+		noStroke();
+		fill(0);
+		textAlign(CENTER, CENTER);
+		textSize(28);
+		text(`Click to start/pause game`, width / 2, height / 2);
+		camera.on();
+		return;
+	}
 
 	if (win) {
 		camera.off();
@@ -362,13 +377,7 @@ function draw() {
 
 	if (kb.pressing("c")) catched = true;
 	if (kb.pressing("s") || kb.pressing("down")) squat = true;
-	if (
-		mouse.presses() ||
-		kb.presses("space") ||
-		kb.presses("w") ||
-		kb.presses("up")
-	)
-		jump = true;
+	if (kb.presses("space") || kb.presses("w") || kb.presses("up")) jump = true;
 
 	if (jump && onGround) {
 		player.vel.y = JUMP;
@@ -632,6 +641,10 @@ function restart() {
 	fight = false;
 	giraffeLife = LIFE;
 	robotLife = LIFE;
+
+	song.stop();
+	song.play();
+	loop();
 }
 
 // Draw treshold indicator
