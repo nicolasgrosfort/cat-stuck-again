@@ -602,7 +602,11 @@ function drawBodyOverlay() {
 	}
 
 	// État global : au moins un catch ?
-	catched = (giraffeCatch || robotCatch) && poses.length > 0;
+	catched =
+		(giraffeCatch || robotCatch) &&
+		poses.length > 0 &&
+		!squat &&
+		!allHeadsAboveJump;
 
 	// Qui a catché ?
 	if (giraffeCatch && !robotCatch) lastCatcher = "giraffe";
