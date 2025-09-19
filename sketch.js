@@ -109,7 +109,7 @@ let minecraftFont;
 let catFight, leafFight;
 
 const levelLines = [
-	"-------T---O---T---O---H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T-O--H---T--HH--O---T---E-",
+	"------T---O---T---O---H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T-O--H---T--HH--O---T---E",
 ];
 
 const SIZE = {
