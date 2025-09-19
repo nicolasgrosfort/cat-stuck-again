@@ -586,22 +586,32 @@ function draw() {
 
 	for (const t of trees) {
 		if (player.overlaps(t)) {
-			// Exemple : changer la couleur du player
+			// Fight if two player try to catch a ressources
 			if (shouldFight && t.ressources.length === 2) fight = true;
 			else if (catched) {
 				const nextEnergy = Math.round(random(3, 10));
 				const expiration = frameCount + 60 * 3;
 
-				treeSound.play();
-
 				if (lastCatcher === "giraffe" && t.ressources.includes("leaf")) {
 					giraffeLife += nextEnergy;
 					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+
+					const targetLeaf = leaves.find(
+						(l) => l.idNum === t.ressourcesId.leaf,
+					);
+					if (targetLeaf) targetLeaf.remove();
+
+					treeSound.play();
 				} else if (lastCatcher === "robot" && t.ressources.includes("cat")) {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+
+					const targetCat = cats.find((c) => c.idNum === t.ressourcesId.cat);
+					if (targetCat) targetCat.remove();
+
+					treeSound.play();
 				}
 			}
 		}
@@ -664,6 +674,10 @@ function buildLevel() {
 			const tree = new trees.Sprite(xCenter, yT);
 
 			tree.ressources = [];
+			tree.ressourcesId = {
+				cat: null,
+				leaf: null,
+			};
 
 			// Décider indépendamment pour le chat et les feuilles
 			const hasCat = Math.random() < 0.6; // 60% de chance d'avoir un chat
@@ -684,20 +698,20 @@ function buildLevel() {
 				}
 
 				tree.ressources.push("cat");
+				tree.ressourcesId.cat = cat.idNum;
 			}
 
 			if (hasLeaves) {
 				// Ajouter plusieurs feuilles pour un effet plus naturel
-				const numLeaves = 1;
-				for (let i = 0; i < numLeaves; i++) {
-					const leaf = new leaves.Sprite(
-						xCenter + random(-TILE * 0.3, TILE * 0.3),
-						yT + random(-TILE * 0.9, -TILE * 0.1),
-					);
-					leaf.scale = random(0.3, 0.6);
-					leaf.rotation = random(-45, 45); // rotation aléatoire
-				}
+				const leaf = new leaves.Sprite(
+					xCenter + random(-TILE * 0.3, TILE * 0.3),
+					yT + random(-TILE * 0.9, -TILE * 0.1),
+				);
+				leaf.scale = random(0.3, 0.6);
+				leaf.rotation = random(-45, 45); // rotation aléatoire
+
 				tree.ressources.push("leaf");
+				tree.ressourcesId.leaf = leaf.idNum;
 			}
 		} else if (c === "E") {
 			// END
