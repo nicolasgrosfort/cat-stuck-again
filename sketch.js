@@ -1,5 +1,5 @@
 const TILE = 100;
-const SPEED = 5;
+const SPEED = 10;
 const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
@@ -75,7 +75,7 @@ let player,
 	cats,
 	leaves;
 
-const LIFE_DECREASE = 1;
+const LIFE_DECREASE = 50;
 
 let gameOver = false,
 	fight = false,
@@ -110,7 +110,7 @@ let minecraftFont;
 let catFight, leafFight;
 
 const levelLines = [
-	"------T----T---T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H---T--HH--O---T---E",
+	"-------T---O---T---O---H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T-O--H---T--HH--O---T---E-",
 ];
 
 let song,
@@ -534,8 +534,6 @@ function draw() {
 	}
 
 	camera.x = player.x + width * 0.25 + shakeX;
-
-	console.log(camera.y, windowHeight / 2);
 	camera.y = height / 2 + shakeY;
 
 	gameHasStarted = true;
