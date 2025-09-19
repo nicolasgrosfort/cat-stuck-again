@@ -283,16 +283,19 @@ function draw() {
 			if (!fightSound.isPlaying()) fightSound.play();
 			triggerCameraShake(10, 30);
 
+			// add margin of 100px around the fight area
+			const margin = 100;
+
 			catFight = {
 				ratio: 0.25,
-				x: random(0, SIZE.width),
-				y: random(0, SIZE.height),
+				x: random(0 + margin, SIZE.width / 2 - margin),
+				y: random(0 + margin, SIZE.height - margin),
 			};
 
 			leafFight = {
 				ratio: 0.25,
-				x: random(0, SIZE.width),
-				y: random(0, SIZE.height),
+				x: random(SIZE.width / 2 + margin, SIZE.width - margin),
+				y: random(0 + margin, SIZE.height - margin),
 			};
 
 			hasFighted = true;
@@ -843,7 +846,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
