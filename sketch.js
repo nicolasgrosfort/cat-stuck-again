@@ -984,6 +984,17 @@ function drawTresholdIndicator() {
 	rect(-10, TRESHOLD.jump, 30, 1);
 	rect(-10, TRESHOLD.squat, 30, 1);
 	rect(width - 20, TRESHOLD.catch, 30, 1);
+
+	// Add texts
+	noStroke();
+	fill(INDICATOR.color);
+
+	textAlign(LEFT, CENTER);
+	textSize(16);
+	text("JUMP", 24, TRESHOLD.jump + 4);
+	text("SQUAT", 24, TRESHOLD.squat + 4);
+	textAlign(RIGHT, CENTER);
+	text("CATCH", width - 24, TRESHOLD.catch + 4);
 	camera.on();
 }
 
