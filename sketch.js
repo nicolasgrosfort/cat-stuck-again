@@ -334,14 +334,14 @@ function draw() {
 	if (win) {
 		camera.off();
 		background("gold");
-		noStroke();
-		fill(0);
-		textAlign(CENTER, CENTER);
-		textSize(48);
-		text("YOU WIN!", width / 2, height / 2);
 		player.vel.x = 0;
 		noLoop();
 		winSound.play();
+		
+		// Show win overlay instead of drawing text
+		if (typeof showWinOverlay === 'function') {
+			showWinOverlay();
+		}
 		camera.on();
 		return;
 	}
@@ -478,15 +478,15 @@ function draw() {
 	if (gameOver) {
 		camera.off();
 		background(10);
-		noStroke();
-		fill(255);
-		textAlign(CENTER, CENTER);
-		textSize(48);
-		text("Game Over\nClick or press [R] to restart", width / 2, height / 2);
 		player.vel.x = 0;
 		camera.on();
 		noLoop();
 		if (!endSound.isPlaying()) endSound.play();
+		
+		// Show game over overlay instead of drawing text
+		if (typeof showGameOverOverlay === 'function') {
+			showGameOverOverlay();
+		}
 		return;
 	}
 
