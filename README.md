@@ -83,3 +83,7 @@ You need a server to fetch the different assets and audio.
 - Speakers
 
 In some cases, it may be necessary to have signs to prevent the camera from detecting other people.
+
+### Repo
+
+<https://github.com/nicolasgrosfort/cat-stuck-again>
