@@ -21,6 +21,7 @@ const GIRAFFE = {
 	alone: null,
 	image: null,
 	crouch: null,
+	aloneCrouch: null,
 	catchGiraffe: null,
 	catchRobot: null,
 	catch: null,
@@ -94,6 +95,8 @@ let giraffeLife = LIFE,
 
 let catImg, bushesImg1, leafImg, cloudsImg, backgroundImg;
 
+let lifeStrokeImg, heartImg, lifeGiraffeImg, lifeRobotImg;
+
 let minecraftFont;
 
 let catFight, leafFight;
@@ -134,6 +137,7 @@ function preload() {
 	GIRAFFE.catchGiraffe = loadImage("./assets/giraffe-catch.png");
 	GIRAFFE.catchRobot = loadImage("./assets/robot-catch.png");
 	GIRAFFE.catch = loadImage("./assets/players-catch.png");
+	GIRAFFE.aloneCrouch = loadImage("./assets/giraffe-crouched.png");
 	minecraftFont = loadFont("./fonts/minecraft.ttf");
 	song = loadSound("./audios/song.mp3");
 	collisionSound = loadSound("./audios/collision.wav");
@@ -146,6 +150,10 @@ function preload() {
 	bushesImg1 = loadImage("./assets/bushes-1.png");
 	catImg = loadImage("./assets/cat.png");
 	leafImg = loadImage("./assets/leaf.png");
+	heartImg = loadImage("./assets/heart.png");
+	lifeStrokeImg = loadImage("./assets/life-stroke.png");
+	lifeGiraffeImg = loadImage("./assets/life-giraffe.png");
+	lifeRobotImg = loadImage("./assets/life-robot.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -810,58 +818,105 @@ function drawLife() {
 	camera.off(); // HUD fixe à l'écran
 
 	// GIRAFFE
-	noFill();
-	stroke(GIRAFFE.color);
-	strokeWeight(2);
-	rect(20, 20, 150, 46);
+	// Calculer la largeur proportionnelle à la vie
+	const giraffeLifeRatio = giraffeLife / LIFE; // ratio entre 0 et 1
+	const fullWidth = lifeGiraffeImg.width * 0.3;
+	const croppedWidth = fullWidth * giraffeLifeRatio;
 
-	noFill();
-	stroke(GIRAFFE.color);
-	strokeWeight(2);
-	rect(20, 20, 150, 46);
+	// Créer une version rognée de l'image de vie
+	const croppedLifeImage = createGraphics(
+		croppedWidth,
+		lifeGiraffeImg.height * 0.3,
+	);
+	croppedLifeImage.image(
+		lifeGiraffeImg,
+		0,
+		0,
+		croppedWidth,
+		lifeGiraffeImg.height * 0.3, // destination
+		0,
+		0,
+		lifeGiraffeImg.width * giraffeLifeRatio,
+		lifeGiraffeImg.height, // source rognée
+	);
 
-	fill(GIRAFFE.color);
-	noStroke();
-	const giraffeLifeWidth = map(giraffeLife, 0, LIFE, 0, 150);
-	rect(20, 20, giraffeLifeWidth, 46);
+	// Afficher l'image rognée
+	image(croppedLifeImage, 67 - 16, 19 + 8);
 
-	fill(255);
-	noStroke();
-	textSize(24);
-	textAlign(LEFT, CENTER);
-	text(`GIRAFFE`, 30, 45);
+	// Afficher le contour par-dessus
+	image(
+		lifeStrokeImg,
+		65 - 16,
+		17 + 8,
+		lifeStrokeImg.width * 0.3,
+		lifeStrokeImg.height * 0.3,
+	);
+
+	image(heartImg, 20, 20, heartImg.width * 0.3, heartImg.height * 0.3);
 
 	image(
-		GIRAFFE.alone,
-		180,
-		10,
-		GIRAFFE.alone.width * 0.2,
-		GIRAFFE.alone.height * 0.2,
+		GIRAFFE.aloneCrouch,
+		256,
+		16,
+		GIRAFFE.aloneCrouch.width * 0.2,
+		GIRAFFE.aloneCrouch.height * 0.2,
 	);
 
 	// ROBOT
+	// Calculer la largeur proportionnelle à la vie du robot
+	const robotLifeRatio = robotLife / LIFE; // ratio entre 0 et 1
+	const robotFullWidth = lifeRobotImg.width * 0.3;
+	const robotCroppedWidth = robotFullWidth * robotLifeRatio;
 
-	noFill();
-	stroke(ROBOT.color);
-	strokeWeight(2);
+	// Créer une version rognée de l'image de vie du robot
+	const croppedRobotLifeImage = createGraphics(
+		robotCroppedWidth,
+		lifeRobotImg.height * 0.3,
+	);
 
-	rect(width - 170, 20, 150, 46);
-	fill(ROBOT.color);
-	noStroke();
-	const robotLifeWidth = map(robotLife, 0, LIFE, 0, 150);
-	rect(width - 170, 20, robotLifeWidth, 46);
+	// MODIFICATION ICI : rogner depuis la droite
+	const sourceStartX = lifeRobotImg.width * (1 - robotLifeRatio); // commencer depuis la droite
+	croppedRobotLifeImage.image(
+		lifeRobotImg,
+		0,
+		0,
+		robotCroppedWidth,
+		lifeRobotImg.height * 0.3, // destination
+		sourceStartX, // commencer depuis la droite de l'image source
+		0,
+		lifeRobotImg.width * robotLifeRatio, // largeur à prendre
+		lifeRobotImg.height, // source rognée
+	);
 
-	fill(255);
-	noStroke();
-	textSize(24);
-	textAlign(LEFT, CENTER);
-	text(`ROBOT`, width - 150, 40);
+	// Position de la barre de vie (alignée à droite)
+	const robotLifeX =
+		width - 20 - heartImg.width * 0.3 - robotCroppedWidth - 10 + 32;
 
-	// Ajouter l'image de chat à côté de la jauge du robot
+	// Afficher l'image rognée
+	image(croppedRobotLifeImage, robotLifeX + 2, 17 + 8 + 2);
+
+	// Afficher le contour par-dessus
+	image(
+		lifeStrokeImg,
+		width - 20 - heartImg.width * 0.3 - robotFullWidth - 10 + 32, // position fixe du contour
+		17 + 8,
+		lifeStrokeImg.width * 0.3,
+		lifeStrokeImg.height * 0.3,
+	);
+
+	image(
+		heartImg,
+		width - 20 - heartImg.width * 0.3,
+		20,
+		heartImg.width * 0.3,
+		heartImg.height * 0.3,
+	);
+
+	// Ajouter l'image de robot
 	image(
 		ROBOT.alone,
-		width - 200,
-		25,
+		width - 276,
+		23,
 		ROBOT.alone.width * 0.2,
 		ROBOT.alone.height * 0.2,
 	);
