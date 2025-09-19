@@ -112,6 +112,11 @@ const levelLines = [
 	"-------T---O---T---O---H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T-O--H---T--HH--O---T---E-",
 ];
 
+const SIZE = {
+	width: 640 * 2,
+	height: 480 * 2,
+};
+
 let song,
 	collisionSound,
 	treeCatSound,
@@ -181,17 +186,17 @@ function mousePressed() {
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function setup() {
-	new Canvas(windowWidth, windowHeight);
+	new Canvas(SIZE.width, SIZE.height);
 	noSmooth();
 	noLoop();
 	textFont(minecraftFont);
 
-	TRESHOLD.jump = windowHeight * 0.4;
-	TRESHOLD.catch = windowHeight * 0.5;
-	TRESHOLD.squat = windowHeight * 0.6;
+	TRESHOLD.jump = SIZE.height * 0.4;
+	TRESHOLD.catch = SIZE.height * 0.5;
+	TRESHOLD.squat = SIZE.height * 0.6;
 
 	video = createCapture(VIDEO);
-	video.size(windowWidth, windowHeight);
+	video.size(SIZE.width, SIZE.height);
 	video.hide();
 	bodyPose.detectStart(video, gotPoses);
 
@@ -370,14 +375,14 @@ function draw() {
 
 			catFight = {
 				ratio: 0.25,
-				x: random(0, windowWidth),
-				y: random(0, windowHeight),
+				x: random(0, SIZE.width),
+				y: random(0, SIZE.height),
 			};
 
 			leafFight = {
 				ratio: 0.25,
-				x: random(0, windowWidth),
-				y: random(0, windowHeight),
+				x: random(0, SIZE.width),
+				y: random(0, SIZE.height),
 			};
 
 			hasFighted = true;
@@ -793,7 +798,7 @@ function bodyReady() {
 	ROBOT.id = null;
 
 	poses.forEach((p) => {
-		const isGiraffe = p.nose.x > windowWidth / 2;
+		const isGiraffe = p.nose.x > SIZE.width / 2;
 		if (isGiraffe) {
 			GIRAFFE.isActive = true;
 			if (!GIRAFFE.id) GIRAFFE.id = p.id;
@@ -803,7 +808,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
@@ -1079,7 +1084,7 @@ function drawBodyOverlay() {
 			robotCatch = robotCatch || isCatching;
 		} else {
 			// Si jamais un ID n'était pas encore fixé, fallback gauche/droite (optionnel)
-			const isGiraffeSide = pose.nose?.x < windowWidth / 2;
+			const isGiraffeSide = pose.nose?.x < SIZE.width / 2;
 			if (isGiraffeSide) giraffeCatch = giraffeCatch || isCatching;
 			else robotCatch = robotCatch || isCatching;
 		}
