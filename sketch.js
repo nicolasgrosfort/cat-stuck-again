@@ -107,7 +107,8 @@ const levelLines = [
 
 let song,
 	collisionSound,
-	treeSound,
+	treeCatSound,
+	treeLeafSound,
 	jumpSound,
 	squatSound,
 	fightSound,
@@ -141,7 +142,9 @@ function preload() {
 	minecraftFont = loadFont("./fonts/minecraft.ttf");
 	song = loadSound("./audios/song.mp3");
 	collisionSound = loadSound("./audios/collision.wav");
-	treeSound = loadSound("./audios/tree.wav");
+
+	treeCatSound = loadSound("./audios/tree-cat.wav");
+	treeLeafSound = loadSound("./audios/tree-leaf.wav");
 	jumpSound = loadSound("./audios/jump.wav");
 	fightSound = loadSound("./audios/fight.wav");
 	squatSound = loadSound("./audios/squat.wav");
@@ -426,16 +429,16 @@ function draw() {
 
 				const expiration = frameCount + 60 * 3; // durée d’affichage du message
 
-				treeSound.play();
-
 				if (isGiraffe) {
 					giraffeLife += nextEnergy;
 					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					treeLeafSound.play();
 				} else {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT ${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					treeCatSound.play();
 				}
 
 				fight = false;
@@ -610,7 +613,7 @@ function draw() {
 					);
 					if (targetLeaf) targetLeaf.remove();
 
-					treeSound.play();
+					treeLeafSound.play();
 				} else if (lastCatcher === "robot" && t.ressources.includes("cat")) {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT +${nextEnergy}`;
@@ -619,7 +622,7 @@ function draw() {
 					const targetCat = cats.find((c) => c.idNum === t.ressourcesId.cat);
 					if (targetCat) targetCat.remove();
 
-					treeSound.play();
+					treeCatSound.play();
 				}
 			}
 		}
@@ -688,8 +691,8 @@ function buildLevel() {
 			};
 
 			// Décider indépendamment pour le chat et les feuilles
-			const hasCat = Math.random() < 0.6; // 60% de chance d'avoir un chat
-			const hasLeaves = Math.random() < 0.6; // 60% de chance d'avoir des feuilles
+			const hasCat = Math.random() < 0.8; // 60% de chance d'avoir un chat
+			const hasLeaves = Math.random() < 0.8; // 60% de chance d'avoir des feuilles
 
 			if (hasCat) {
 				const cat = new cats.Sprite(
@@ -750,7 +753,7 @@ function buildLevel() {
 			new visualGrounds.Sprite(xCenter, y);
 
 			// Add random. bushes
-			if (Math.random() < 0.3) {
+			if (Math.random() < 0.2) {
 				const yBush = Math.round(yGroundTop);
 				const bush = new bushes.Sprite(
 					xCenter + random(-TILE * 0.25, TILE * 0.25),
