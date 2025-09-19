@@ -832,39 +832,30 @@ function decreaseLife() {
 }
 
 function drawLife() {
-	camera.off(); // HUD fixe à l'écran
+	camera.off();
 
-	// GIRAFFE
-	// Normaliser la vie de la girafe (ne peut pas être négative)
-	const normalizedGiraffeLife = Math.max(0, giraffeLife);
-	const giraffeLifeRatio = normalizedGiraffeLife / LIFE; // ratio entre 0 et 1
-	const fullWidth = lifeGiraffeImg.width * 0.3;
-	const croppedWidth = fullWidth * giraffeLifeRatio;
+	// --- GIRAFFE ---
+	const gLife = Math.max(0, giraffeLife);
+	const gRatio = gLife / LIFE;
+	const gFullW = lifeGiraffeImg.width * 0.3;
+	const gFullH = lifeGiraffeImg.height * 0.3;
+	const gCropW = lifeGiraffeImg.width * gRatio;
 
-	// Ne créer l'image que si la vie > 0
-	if (normalizedGiraffeLife > 0) {
-		// Créer une version rognée de l'image de vie
-		const croppedLifeImage = createGraphics(
-			croppedWidth,
-			lifeGiraffeImg.height * 0.3,
-		);
-		croppedLifeImage.image(
+	if (gLife > 0) {
+		// image(img, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight)
+		image(
 			lifeGiraffeImg,
+			67 - 16,
+			19 + 8, // destination x,y
+			gFullW * gRatio,
+			gFullH, // destination w,h
 			0,
-			0,
-			croppedWidth,
-			lifeGiraffeImg.height * 0.3, // destination
-			0,
-			0,
-			lifeGiraffeImg.width * giraffeLifeRatio,
-			lifeGiraffeImg.height, // source rognée
+			0, // source x,y
+			gCropW,
+			lifeGiraffeImg.height, // source w,h
 		);
-
-		// Afficher l'image rognée
-		image(croppedLifeImage, 67 - 16, 19 + 8);
 	}
 
-	// Afficher le contour par-dessus (toujours visible)
 	image(
 		lifeStrokeImg,
 		65 - 16,
@@ -872,9 +863,7 @@ function drawLife() {
 		lifeStrokeImg.width * 0.3,
 		lifeStrokeImg.height * 0.3,
 	);
-
 	image(heartImg, 20, 20, heartImg.width * 0.3, heartImg.height * 0.3);
-
 	image(
 		GIRAFFE.aloneCrouch,
 		256,
@@ -883,52 +872,40 @@ function drawLife() {
 		GIRAFFE.aloneCrouch.height * 0.2,
 	);
 
-	// ROBOT
-	// Normaliser la vie du robot (ne peut pas être négative)
-	const normalizedRobotLife = Math.max(0, robotLife);
-	const robotLifeRatio = normalizedRobotLife / LIFE; // ratio entre 0 et 1
-	const robotFullWidth = lifeRobotImg.width * 0.3;
-	const robotCroppedWidth = robotFullWidth * robotLifeRatio;
+	// --- ROBOT ---
+	const rLife = Math.max(0, robotLife);
+	const rRatio = rLife / LIFE;
+	const rFullW = lifeRobotImg.width * 0.3;
+	const rFullH = lifeRobotImg.height * 0.3;
+	const rCropW = lifeRobotImg.width * rRatio;
 
-	// Ne créer l'image que si la vie > 0
-	if (normalizedRobotLife > 0) {
-		// Créer une version rognée de l'image de vie du robot
-		const croppedRobotLifeImage = createGraphics(
-			robotCroppedWidth,
-			lifeRobotImg.height * 0.3,
-		);
-
-		// MODIFICATION ICI : rogner depuis la droite
-		const sourceStartX = lifeRobotImg.width * (1 - robotLifeRatio); // commencer depuis la droite
-		croppedRobotLifeImage.image(
-			lifeRobotImg,
-			0,
-			0,
-			robotCroppedWidth,
-			lifeRobotImg.height * 0.3, // destination
-			sourceStartX, // commencer depuis la droite de l'image source
-			0,
-			lifeRobotImg.width * robotLifeRatio, // largeur à prendre
-			lifeRobotImg.height, // source rognée
-		);
-
-		// Position de la barre de vie (alignée à droite)
+	if (rLife > 0) {
 		const robotLifeX =
-			width - 20 - heartImg.width * 0.3 - robotCroppedWidth - 10 + 32;
+			width - 20 - heartImg.width * 0.3 - rFullW * rRatio - 10 + 32;
 
-		// Afficher l'image rognée
-		image(croppedRobotLifeImage, robotLifeX + 2, 17 + 8 + 2);
+		// rogner depuis la droite : on décale la source
+		const sX = lifeRobotImg.width - rCropW;
+
+		image(
+			lifeRobotImg,
+			robotLifeX + 2,
+			17 + 8 + 2,
+			rFullW * rRatio,
+			rFullH,
+			sX,
+			0,
+			rCropW,
+			lifeRobotImg.height,
+		);
 	}
 
-	// Afficher le contour par-dessus (toujours visible)
 	image(
 		lifeStrokeImg,
-		width - 20 - heartImg.width * 0.3 - robotFullWidth - 10 + 32, // position fixe du contour
+		width - 20 - heartImg.width * 0.3 - rFullW - 10 + 32,
 		17 + 8,
 		lifeStrokeImg.width * 0.3,
 		lifeStrokeImg.height * 0.3,
 	);
-
 	image(
 		heartImg,
 		width - 20 - heartImg.width * 0.3,
@@ -936,8 +913,6 @@ function drawLife() {
 		heartImg.width * 0.3,
 		heartImg.height * 0.3,
 	);
-
-	// Ajouter l'image de robot
 	image(
 		ROBOT.alone,
 		width - 276,
