@@ -203,96 +203,6 @@ function setup() {
 	// World
 	world.gravity.y = GRAVITY;
 
-	// Player
-	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	player.color = PLAYER.color;
-	player.stroke = SKY.color;
-	player.rotationLock = true;
-	player.friction = 0;
-	player.bounciness = 0;
-	player.vel.x = SPEED;
-	player.visible = false; // on ne voit pas le player d’origine, seulement playerImage
-
-	// Player Image
-	playerImage = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
-	playerImage.image = GIRAFFE.image;
-	playerImage.rotationLock = true;
-	playerImage.friction = 0;
-	playerImage.bounciness = 0;
-	playerImage.collider = "none";
-	playerImage.layer = 10;
-
-	// Grounds
-	grounds = new Group();
-	grounds.collider = "static";
-	grounds.color = GROUND.color;
-	grounds.stroke = SKY.color;
-	grounds.h = TILE * 0.5;
-	grounds.w = TILE;
-	grounds.bounciness = 0;
-	grounds.layer = -1; // derrière le player
-	grounds.visible = false; // on ne voit pas les sols d’origine, seulement visualGrounds
-
-	visualGrounds = new Group();
-	visualGrounds.collider = "none";
-	visualGrounds.h = TILE * 0.5;
-	visualGrounds.w = TILE;
-	visualGroundsImg.resize(visualGrounds.w * 2, visualGrounds.h * 2); // resize to group size
-	visualGrounds.image = visualGroundsImg;
-	visualGrounds.bounciness = 0;
-	visualGrounds.layer = -1; // derrière le player
-
-	// Obstacles
-	obstacles = new Group();
-	obstacles.collider = "none";
-	obstacles.w = TILE * 0.5;
-	obstacles.h = TILE * 0.5;
-	birdImg.resize(obstacles.w * 2, obstacles.h * 2);
-	obstacles.image = birdImg;
-	obstacles.offset.y = -obstacles.h / 2;
-
-	// Trees
-	trees = new Group();
-	trees.collider = "none";
-	trees.w = TILE * 0.5;
-	trees.h = TILE * 2;
-	trees.image = treesImg;
-	trees.color = TREE.color;
-	trees.stroke = SKY.color;
-	trees.offset.y = 0; // posé sur le sol
-	trees.layer = -1; // derrière le player
-
-	// Clouds
-	clouds = new Group();
-	clouds.collider = "none";
-	clouds.w = TILE;
-	clouds.h = TILE * 0.5;
-	clouds.image = cloudsImg;
-	clouds.color = CLOUD.color;
-	clouds.stroke = SKY.color;
-	clouds.offset.y = -TILE * 1.5; // dans le ciel
-
-	// Bushes
-	bushes = new Group();
-	bushes.collider = "none";
-	bushes.image = bushesImg1;
-
-	// Cats in trees
-	cats = new Group();
-	cats.collider = "none";
-	cats.w = TILE * 0.3;
-	cats.h = TILE * 0.3;
-	cats.image = catImg;
-	cats.layer = 1; // devant les arbres
-
-	// Leaves in trees
-	leaves = new Group();
-	leaves.collider = "none";
-	leaves.w = TILE * 0.2;
-	leaves.h = TILE * 0.2;
-	leaves.image = leafImg;
-	leaves.layer = 1; // devant les arbres
-
 	buildLevel();
 }
 
@@ -660,7 +570,132 @@ function draw() {
 	}
 }
 
+function resetLevel() {
+	// Supprimer tous les sprites des groupes créés dans buildLevel
+	grounds.removeAll();
+	visualGrounds.removeAll();
+	obstacles.removeAll();
+	trees.removeAll();
+	cats.removeAll();
+	leaves.removeAll();
+	bushes.removeAll();
+	clouds.removeAll();
+
+	// Supprimer les sprites individuels (comme les maisons/end points)
+	// Si vous avez stocké ces sprites dans des variables globales, les supprimer aussi
+	allSprites.forEach((sprite) => {
+		// Supprimer tous les sprites qui ne sont pas le player
+		if (sprite !== player) {
+			sprite.remove();
+		}
+	});
+
+	// Réinitialiser les variables de jeu si nécessaire
+	win = false;
+
+	// Optionnel : réinitialiser la position du joueur
+	if (player) {
+		player.pos.x =
+			/* position initiale x */
+			player.pos.y =
+			/* position initiale y */
+			player.vel.x =
+				0;
+		player.vel.y = 0;
+	}
+}
+
 function buildLevel() {
+	// Player
+	player = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	player.color = PLAYER.color;
+	player.stroke = SKY.color;
+	player.rotationLock = true;
+	player.friction = 0;
+	player.bounciness = 0;
+	player.vel.x = SPEED;
+	player.visible = false; // on ne voit pas le player d’origine, seulement playerImage
+
+	// Player Image
+	playerImage = new Sprite(TILE, height - TILE * 2, TILE * 0.5, TILE);
+	playerImage.image = GIRAFFE.image;
+	playerImage.rotationLock = true;
+	playerImage.friction = 0;
+	playerImage.bounciness = 0;
+	playerImage.collider = "none";
+	playerImage.layer = 10;
+
+	// Grounds
+	grounds = new Group();
+	grounds.collider = "static";
+	grounds.color = GROUND.color;
+	grounds.stroke = SKY.color;
+	grounds.h = TILE * 0.5;
+	grounds.w = TILE;
+	grounds.bounciness = 0;
+	grounds.layer = -1; // derrière le player
+	grounds.visible = false; // on ne voit pas les sols d’origine, seulement visualGrounds
+
+	visualGrounds = new Group();
+	visualGrounds.collider = "none";
+	visualGrounds.h = TILE * 0.5;
+	visualGrounds.w = TILE;
+	visualGroundsImg.resize(visualGrounds.w * 2, visualGrounds.h * 2); // resize to group size
+	visualGrounds.image = visualGroundsImg;
+	visualGrounds.bounciness = 0;
+	visualGrounds.layer = -1; // derrière le player
+
+	// Obstacles
+	obstacles = new Group();
+	obstacles.collider = "none";
+	obstacles.w = TILE * 0.5;
+	obstacles.h = TILE * 0.5;
+	birdImg.resize(obstacles.w * 2, obstacles.h * 2);
+	obstacles.image = birdImg;
+	obstacles.offset.y = -obstacles.h / 2;
+
+	// Trees
+	trees = new Group();
+	trees.collider = "none";
+	trees.w = TILE * 0.5;
+	trees.h = TILE * 2;
+	trees.image = treesImg;
+	trees.color = TREE.color;
+	trees.stroke = SKY.color;
+	trees.offset.y = 0; // posé sur le sol
+	trees.layer = -1; // derrière le player
+
+	// Clouds
+	clouds = new Group();
+	clouds.collider = "none";
+	clouds.w = TILE;
+	clouds.h = TILE * 0.5;
+	clouds.image = cloudsImg;
+	clouds.color = CLOUD.color;
+	clouds.stroke = SKY.color;
+	clouds.offset.y = -TILE * 1.5; // dans le ciel
+
+	// Bushes
+	bushes = new Group();
+	bushes.collider = "none";
+	bushes.image = bushesImg1;
+
+	// Cats in trees
+	cats = new Group();
+	cats.collider = "none";
+	cats.w = TILE * 0.3;
+	cats.h = TILE * 0.3;
+	cats.image = catImg;
+	cats.layer = 1; // devant les arbres
+
+	// Leaves in trees
+	leaves = new Group();
+	leaves.collider = "none";
+	leaves.w = TILE * 0.2;
+	leaves.h = TILE * 0.2;
+	leaves.image = leafImg;
+	leaves.layer = 1; // devant les arbres
+
 	const line = levelLines[0];
 
 	// --- A) SOLS : segments fusionnés entre 'H' ---
@@ -950,6 +985,9 @@ function restart() {
 	fight = false;
 	giraffeLife = LIFE;
 	robotLife = LIFE;
+
+	resetLevel();
+	buildLevel();
 
 	song.stop();
 	song.play();
