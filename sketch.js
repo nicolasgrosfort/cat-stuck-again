@@ -108,7 +108,7 @@ let minecraftFont;
 let catFight, leafFight;
 
 const levelLines = [
-	"-------T-------T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H-----HH--O---T---E",
+	"------T----T---T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H---T--HH--O---T---E-",
 ];
 
 let song,
@@ -431,7 +431,7 @@ function draw() {
 				isGiraffe;
 
 			if (handInCatArea || handInLeafArea) {
-				const nextEnergy = Math.round(random(3, 10));
+				const nextEnergy = Math.round(random(5, 10));
 
 				const expiration = frameCount + 60 * 3; // durée d’affichage du message
 
@@ -610,7 +610,7 @@ function draw() {
 			// Fight if two player try to catch a ressources
 			if (shouldFight && t.ressources.length === 2) fight = true;
 			else if (catched) {
-				const nextEnergy = Math.round(random(3, 10));
+				const nextEnergy = Math.round(random(5, 10));
 				const expiration = frameCount + 60 * 3;
 
 				if (lastCatcher === "giraffe" && t.ressources.includes("leaf")) {
