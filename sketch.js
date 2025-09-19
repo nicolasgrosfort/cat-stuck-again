@@ -337,9 +337,9 @@ function draw() {
 		player.vel.x = 0;
 		noLoop();
 		winSound.play();
-		
+
 		// Show win overlay instead of drawing text
-		if (typeof showWinOverlay === 'function') {
+		if (typeof showWinOverlay === "function") {
 			showWinOverlay();
 		}
 		camera.on();
@@ -482,9 +482,9 @@ function draw() {
 		camera.on();
 		noLoop();
 		if (!endSound.isPlaying()) endSound.play();
-		
+
 		// Show game over overlay instead of drawing text
-		if (typeof showGameOverOverlay === 'function') {
+		if (typeof showGameOverOverlay === "function") {
 			showGameOverOverlay();
 		}
 		return;
@@ -808,7 +808,7 @@ function bodyReady() {
 		}
 	});
 
-	if (GIRAFFE.isActive && ROBOT.isActive) waitingForPlayers = false;
+	if (GIRAFFE.isActive || ROBOT.isActive) waitingForPlayers = false;
 	else waitingForPlayers = true;
 }
 
