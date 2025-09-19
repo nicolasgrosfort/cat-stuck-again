@@ -1,8 +1,9 @@
 const TILE = 100;
-const SPEED = 10;
+const SPEED = 5;
 const JUMP = -15;
 const LIFE = 100;
 const GRAVITY = 30;
+const LIFE_DECREASE = 12;
 
 const TRESHOLD = {
 	jump: null,
@@ -74,8 +75,6 @@ let player,
 	bushes,
 	cats,
 	leaves;
-
-const LIFE_DECREASE = 50;
 
 let gameOver = false,
 	fight = false,
@@ -711,7 +710,8 @@ function buildLevel() {
 					xCenter + random(-TILE * 0.2, TILE * 0.2), // position légèrement aléatoire
 					yT - TILE * 0.8, // position dans la couronne de l'arbre
 				);
-				cat.scale = 0.3; // taille légèrement variable
+				cat.scale = 0.4; // taille légèrement variable
+				cat.rotation = random(-20, 20); // rotation aléatoire
 
 				// Variation aléatoire de la position du chat
 				if (Math.random() < 0.5) {
@@ -730,8 +730,8 @@ function buildLevel() {
 					xCenter + random(-TILE * 0.3, TILE * 0.3),
 					yT + random(-TILE * 0.9, -TILE * 0.1),
 				);
-				leaf.scale = random(0.3, 0.6);
-				leaf.rotation = random(-45, 45); // rotation aléatoire
+				leaf.scale = 0.4;
+				leaf.rotation = random(-20, 20); // rotation aléatoire
 
 				tree.ressources.push("leaf");
 				tree.ressourcesId.leaf = leaf.idNum;
