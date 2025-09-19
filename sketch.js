@@ -96,6 +96,8 @@ let catImg, bushesImg1, leafImg, cloudsImg, backgroundImg;
 
 let minecraftFont;
 
+let catFight, leafFight;
+
 const levelLines = [
 	"-------T-------T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H-----HH--O---T---E",
 ];
@@ -321,33 +323,64 @@ function draw() {
 		return;
 	}
 
-	if (fight) {
+	if (fight || !fight) {
 		camera.off();
 		background("lightcoral");
 		noStroke();
 		fill(255);
 		textAlign(CENTER, CENTER);
 		textSize(48);
-		text("HERE!", width / 2, height / 2);
+		text("CATCH THE CAT/LEAF!", width / 2, height / 2);
 		player.vel.x = 0;
 		push();
 		translate(width, 0);
 		scale(-1, 1);
 
+		// Squezze camera for fight
 		if (!hasFighted) {
 			if (!fightSound.isPlaying()) fightSound.play();
 			triggerCameraShake(10, 30);
+
+			catFight = {
+				ratio: 0.25,
+				x: random(0, windowWidth),
+				y: random(0, windowHeight),
+			};
+
+			leafFight = {
+				ratio: 0.25,
+				x: random(0, windowWidth),
+				y: random(0, windowHeight),
+			};
+
 			hasFighted = true;
 		}
+
+		// Draw a cat at random positions
+		image(
+			catImg,
+			catFight.x - (catImg.width * catFight.ratio) / 2,
+			catFight.y - (catImg.height * catFight.ratio) / 2,
+			catImg.width * catFight.ratio,
+			catImg.height * catFight.ratio,
+		);
+		// Draw a leaf at random positions
+		image(
+			leafImg,
+			leafFight.x - (leafImg.width * leafFight.ratio) / 2,
+			leafFight.y - (leafImg.height * leafFight.ratio) / 2,
+			leafImg.width * leafFight.ratio,
+			leafImg.height * leafFight.ratio,
+		);
 
 		for (const p of poses) {
 			const leftHand = p.keypoints[9];
 
 			const isGiraffe = p.id === GIRAFFE.id;
 
-			// INDICATORS
+			// Cursors
 			const targetImage = isGiraffe ? GIRAFFE.alone : ROBOT.alone;
-			const imageFactor = 0.15;
+			const imageFactor = 0.5;
 
 			image(
 				targetImage,
@@ -357,20 +390,21 @@ function draw() {
 				targetImage.height * imageFactor,
 			);
 
-			// Detect if hand is inside a random area
-			const handInArea =
-				leftHand.x > width / 2 - 100 &&
-				leftHand.x < width / 2 + 100 &&
-				leftHand.y > height / 2 - 50 &&
-				leftHand.y < height / 2 + 50;
+			const handInCatArea =
+				leftHand.x > catFight.x &&
+				leftHand.x < catFight.x + catImg.width * catFight.ratio &&
+				leftHand.y > catFight.y &&
+				leftHand.y < catFight.y + catImg.height * catFight.ratio &&
+				!isGiraffe;
 
-			// draw area
-			noFill();
-			stroke(255);
-			strokeWeight(2);
-			rect(width / 2 - 100, height / 2 - 50, 200, 100);
+			const handInLeafArea =
+				leftHand.x > leafFight.x &&
+				leftHand.x < leafFight.x + leafImg.width * leafFight.ratio &&
+				leftHand.y > leafFight.y &&
+				leftHand.y < leafFight.y + leafImg.height * leafFight.ratio &&
+				isGiraffe;
 
-			if (handInArea) {
+			if (handInCatArea || handInLeafArea) {
 				const nextEnergy = Math.round(random(3, 10));
 
 				const expiration = frameCount + 60 * 3; // durée d’affichage du message
