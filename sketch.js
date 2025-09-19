@@ -27,6 +27,11 @@ const GIRAFFE = {
 	catch: null,
 };
 
+const COLOR = {
+	giraffeLife: "#FFDC31",
+	robotLife: "#1AD866",
+};
+
 const ROBOT = {
 	id: null,
 	isActive: false,
@@ -57,6 +62,7 @@ const INDICATOR = {
 const MESSAGE = {
 	text: "",
 	expiration: 0,
+	color: null,
 };
 
 let player,
@@ -433,11 +439,13 @@ function draw() {
 					giraffeLife += nextEnergy;
 					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					MESSAGE.color = COLOR.giraffeLife;
 					treeLeafSound.play();
 				} else {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT ${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					MESSAGE.color = COLOR.robotLife;
 					treeCatSound.play();
 				}
 
@@ -585,10 +593,12 @@ function draw() {
 				giraffeLife += nextEnergy;
 				MESSAGE.text = `GIRAFFE ${nextEnergy}`;
 				MESSAGE.expiration = expiration;
+				MESSAGE.color = COLOR.giraffeLife;
 			} else {
 				robotLife += nextEnergy;
 				MESSAGE.text = `ROBOT ${nextEnergy}`;
 				MESSAGE.expiration = expiration;
+				MESSAGE.color = COLOR.robotLife;
 			}
 
 			o.remove();
@@ -607,6 +617,7 @@ function draw() {
 					giraffeLife += nextEnergy;
 					MESSAGE.text = `GIRAFFE +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					MESSAGE.color = COLOR.giraffeLife;
 
 					const targetLeaf = leaves.find(
 						(l) => l.idNum === t.ressourcesId.leaf,
@@ -618,6 +629,7 @@ function draw() {
 					robotLife += nextEnergy;
 					MESSAGE.text = `ROBOT +${nextEnergy}`;
 					MESSAGE.expiration = expiration;
+					MESSAGE.color = COLOR.robotLife;
 
 					const targetCat = cats.find((c) => c.idNum === t.ressourcesId.cat);
 					if (targetCat) targetCat.remove();
@@ -939,6 +951,7 @@ function restart() {
 
 	MESSAGE.text = "";
 	MESSAGE.expiration = 0;
+	MESSAGE.color = null;
 
 	// Reset settings
 	score = 0;
@@ -1089,12 +1102,13 @@ function drawBodyOverlay() {
 function displayMessage() {
 	if (MESSAGE.text === "" || frameCount > MESSAGE.expiration) return;
 	camera.off();
-	fill(0, 0, 0, 200);
-	rect(0, height / 2 - 40, width, 80);
+	fill(MESSAGE.color || "rgba(255, 255, 255, 0)");
 	noStroke();
-	fill(255);
+	rect(0, height / 2 - 50, width, 100);
+	noStroke();
+	fill(0);
 	textAlign(CENTER, CENTER);
-	textSize(24);
+	textSize(48);
 	text(MESSAGE.text, width / 2, height / 2);
 	camera.on();
 }
