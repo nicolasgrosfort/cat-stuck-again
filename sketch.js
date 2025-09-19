@@ -121,31 +121,31 @@ const shakeDecay = 0.95;
 // biome-ignore lint/correctness/noUnusedVariables: <>
 function preload() {
 	bodyPose = ml5.bodyPose();
-	visualGroundsImg = loadImage("assets/ground.png");
-	treesImg = loadImage("assets/tree.png");
-	cloudsImg = loadImage("assets/cloud.png");
-	houseImg = loadImage("assets/house.png");
-	backgroundImg = loadImage("assets/background.png");
-	birdImg = loadImage("assets/bird.png");
-	GIRAFFE.image = loadImage("assets/players.png");
-	GIRAFFE.crouch = loadImage("assets/players-crouched.png");
-	GIRAFFE.alone = loadImage("assets/giraffe.png");
-	ROBOT.alone = loadImage("assets/robot.png");
-	GIRAFFE.catchGiraffe = loadImage("assets/giraffe-catch.png");
-	GIRAFFE.catchRobot = loadImage("assets/robot-catch.png");
-	GIRAFFE.catch = loadImage("assets/players-catch.png");
-	minecraftFont = loadFont("fonts/minecraft.ttf");
-	song = loadSound("/audios/song.mp3");
-	collisionSound = loadSound("/audios/collision.wav");
-	treeSound = loadSound("/audios/tree.wav");
-	jumpSound = loadSound("/audios/jump.wav");
-	fightSound = loadSound("/audios/fight.wav");
-	squatSound = loadSound("/audios/squat.wav");
-	endSound = loadSound("/audios/end.wav");
-	winSound = loadSound("/audios/win.wav");
-	bushesImg1 = loadImage("assets/bushes-1.png");
-	catImg = loadImage("assets/cat.png");
-	leafImg = loadImage("assets/leaf.png");
+	visualGroundsImg = loadImage("./assets/ground.png");
+	treesImg = loadImage("./assets/tree.png");
+	cloudsImg = loadImage("./assets/cloud.png");
+	houseImg = loadImage("./assets/house.png");
+	backgroundImg = loadImage("./assets/background.png");
+	birdImg = loadImage("./assets/bird.png");
+	GIRAFFE.image = loadImage("./assets/players.png");
+	GIRAFFE.crouch = loadImage("./assets/players-crouched.png");
+	GIRAFFE.alone = loadImage("./assets/giraffe.png");
+	ROBOT.alone = loadImage("./assets/robot.png");
+	GIRAFFE.catchGiraffe = loadImage("./assets/giraffe-catch.png");
+	GIRAFFE.catchRobot = loadImage("./assets/robot-catch.png");
+	GIRAFFE.catch = loadImage("./assets/players-catch.png");
+	minecraftFont = loadFont("./fonts/minecraft.ttf");
+	song = loadSound("./audios/song.mp3");
+	collisionSound = loadSound("./audios/collision.wav");
+	treeSound = loadSound("./audios/tree.wav");
+	jumpSound = loadSound("./audios/jump.wav");
+	fightSound = loadSound("./audios/fight.wav");
+	squatSound = loadSound("./audios/squat.wav");
+	endSound = loadSound("./audios/end.wav");
+	winSound = loadSound("./audios/win.wav");
+	bushesImg1 = loadImage("./assets/bushes-1.png");
+	catImg = loadImage("./assets/cat.png");
+	leafImg = loadImage("./assets/leaf.png");
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: <>
@@ -323,7 +323,7 @@ function draw() {
 		return;
 	}
 
-	if (fight || !fight) {
+	if (fight) {
 		camera.off();
 		background("lightcoral");
 		noStroke();
@@ -335,6 +335,15 @@ function draw() {
 		push();
 		translate(width, 0);
 		scale(-1, 1);
+
+		playerImage.visible = false;
+		visualGrounds.visible = false;
+		obstacles.visible = false;
+		trees.visible = false;
+		clouds.visible = false;
+		bushes.visible = false;
+		cats.visible = false;
+		leaves.visible = false;
 
 		// Squezze camera for fight
 		if (!hasFighted) {
@@ -374,7 +383,7 @@ function draw() {
 		);
 
 		for (const p of poses) {
-			const leftHand = p.keypoints[9];
+			const rightHand = p.keypoints[10];
 
 			const isGiraffe = p.id === GIRAFFE.id;
 
@@ -384,24 +393,24 @@ function draw() {
 
 			image(
 				targetImage,
-				leftHand.x - (targetImage.width * imageFactor) / 2 - 15,
-				leftHand.y - (targetImage.height * imageFactor) / 2,
+				rightHand.x - (targetImage.width * imageFactor) / 2 - 15,
+				rightHand.y - (targetImage.height * imageFactor) / 2,
 				targetImage.width * imageFactor,
 				targetImage.height * imageFactor,
 			);
 
 			const handInCatArea =
-				leftHand.x > catFight.x &&
-				leftHand.x < catFight.x + catImg.width * catFight.ratio &&
-				leftHand.y > catFight.y &&
-				leftHand.y < catFight.y + catImg.height * catFight.ratio &&
+				rightHand.x > catFight.x &&
+				rightHand.x < catFight.x + catImg.width * catFight.ratio &&
+				rightHand.y > catFight.y &&
+				rightHand.y < catFight.y + catImg.height * catFight.ratio &&
 				!isGiraffe;
 
 			const handInLeafArea =
-				leftHand.x > leafFight.x &&
-				leftHand.x < leafFight.x + leafImg.width * leafFight.ratio &&
-				leftHand.y > leafFight.y &&
-				leftHand.y < leafFight.y + leafImg.height * leafFight.ratio &&
+				rightHand.x > leafFight.x &&
+				rightHand.x < leafFight.x + leafImg.width * leafFight.ratio &&
+				rightHand.y > leafFight.y &&
+				rightHand.y < leafFight.y + leafImg.height * leafFight.ratio &&
 				isGiraffe;
 
 			if (handInCatArea || handInLeafArea) {
@@ -430,6 +439,15 @@ function draw() {
 		camera.on();
 
 		return;
+	} else {
+		playerImage.visible = true;
+		visualGrounds.visible = true;
+		obstacles.visible = true;
+		trees.visible = true;
+		clouds.visible = true;
+		bushes.visible = true;
+		cats.visible = true;
+		leaves.visible = true;
 	}
 
 	if (gameOver) {
