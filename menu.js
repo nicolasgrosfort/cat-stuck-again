@@ -236,6 +236,10 @@ function showRulesPage() {
     line-height: 1.8;
     text-align: left;
     font-family: 'minecraft', monospace;
+    height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
   `;
 
 	const rulesList = [
@@ -247,14 +251,27 @@ function showRulesPage() {
 		{ text: "Move your head 👤 DOWN ↓ to SQUAT under dangers", isTitle: false },
 		{ text: "ENERGY", isTitle: true },
 		{
-			text: "Raise your right hand ✋ when passing TREES 🌳 to catch ressources for ENERGY ⚡️",
+			text: "Raise your RIGHT hand ✋ when passing TREES 🌳 to catch ressources for ENERGY ⚡️",
 			isTitle: false,
 		},
 		{
-			text: "Catch the leaves 🍃 to keep the GIRAFFE's energy",
+			text: "Catch the LEAVES 🍃 to keep the GIRAFFE 🦒's energy",
 			isTitle: false,
 		},
-		{ text: "Catch the cats 🐱 to keep the ROBOT's energy", isTitle: false },
+		{ text: "Catch the CATS 🐱 to keep the ROBOT 🤖's energy", isTitle: false },
+		{ text: "TEAM FIGHT", isTitle: true },
+		{
+			text: "When two players catch a ressource at the same time, they fight for it",
+			isTitle: false,
+		},
+		{
+			text: "Direct your RIGHT hand ✋ on the ressource you want to catch",
+			isTitle: false,
+		},
+		{
+			text: "To the LEAF 🍃 for the GIRAFFE 🦒, to the CAT 🐱 for the ROBOT 🤖",
+			isTitle: false,
+		},
 	];
 
 	rulesList.forEach((rule) => {
