@@ -75,6 +75,8 @@ let player,
 	cats,
 	leaves;
 
+const LIFE_DECREASE = 1;
+
 let gameOver = false,
 	fight = false,
 	win = false;
@@ -108,7 +110,7 @@ let minecraftFont;
 let catFight, leafFight;
 
 const levelLines = [
-	"------T----T---T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H---T--HH--O---T---E-",
+	"------T----T---T-----O----H--T--T---O--T--H--T--O---T--T-O---HH---T----O--H--T---O----T---T----H---T--HH--O---T---E",
 ];
 
 let song,
@@ -822,43 +824,49 @@ function gotPoses(results) {
 
 function decreaseLife() {
 	giraffeLife =
-		frameCount % 10 === 0
+		frameCount % LIFE_DECREASE === 0
 			? giraffeLife - Math.round(random([0, 1]))
 			: giraffeLife;
 	robotLife =
-		frameCount % 10 === 0 ? robotLife - Math.round(random([0, 1])) : robotLife;
+		frameCount % LIFE_DECREASE === 0
+			? robotLife - Math.round(random([0, 1]))
+			: robotLife;
 }
 
 function drawLife() {
 	camera.off(); // HUD fixe à l'écran
 
 	// GIRAFFE
-	// Calculer la largeur proportionnelle à la vie
-	const giraffeLifeRatio = giraffeLife / LIFE; // ratio entre 0 et 1
+	// Normaliser la vie de la girafe (ne peut pas être négative)
+	const normalizedGiraffeLife = Math.max(0, giraffeLife);
+	const giraffeLifeRatio = normalizedGiraffeLife / LIFE; // ratio entre 0 et 1
 	const fullWidth = lifeGiraffeImg.width * 0.3;
 	const croppedWidth = fullWidth * giraffeLifeRatio;
 
-	// Créer une version rognée de l'image de vie
-	const croppedLifeImage = createGraphics(
-		croppedWidth,
-		lifeGiraffeImg.height * 0.3,
-	);
-	croppedLifeImage.image(
-		lifeGiraffeImg,
-		0,
-		0,
-		croppedWidth,
-		lifeGiraffeImg.height * 0.3, // destination
-		0,
-		0,
-		lifeGiraffeImg.width * giraffeLifeRatio,
-		lifeGiraffeImg.height, // source rognée
-	);
+	// Ne créer l'image que si la vie > 0
+	if (normalizedGiraffeLife > 0) {
+		// Créer une version rognée de l'image de vie
+		const croppedLifeImage = createGraphics(
+			croppedWidth,
+			lifeGiraffeImg.height * 0.3,
+		);
+		croppedLifeImage.image(
+			lifeGiraffeImg,
+			0,
+			0,
+			croppedWidth,
+			lifeGiraffeImg.height * 0.3, // destination
+			0,
+			0,
+			lifeGiraffeImg.width * giraffeLifeRatio,
+			lifeGiraffeImg.height, // source rognée
+		);
 
-	// Afficher l'image rognée
-	image(croppedLifeImage, 67 - 16, 19 + 8);
+		// Afficher l'image rognée
+		image(croppedLifeImage, 67 - 16, 19 + 8);
+	}
 
-	// Afficher le contour par-dessus
+	// Afficher le contour par-dessus (toujours visible)
 	image(
 		lifeStrokeImg,
 		65 - 16,
@@ -878,39 +886,43 @@ function drawLife() {
 	);
 
 	// ROBOT
-	// Calculer la largeur proportionnelle à la vie du robot
-	const robotLifeRatio = robotLife / LIFE; // ratio entre 0 et 1
+	// Normaliser la vie du robot (ne peut pas être négative)
+	const normalizedRobotLife = Math.max(0, robotLife);
+	const robotLifeRatio = normalizedRobotLife / LIFE; // ratio entre 0 et 1
 	const robotFullWidth = lifeRobotImg.width * 0.3;
 	const robotCroppedWidth = robotFullWidth * robotLifeRatio;
 
-	// Créer une version rognée de l'image de vie du robot
-	const croppedRobotLifeImage = createGraphics(
-		robotCroppedWidth,
-		lifeRobotImg.height * 0.3,
-	);
+	// Ne créer l'image que si la vie > 0
+	if (normalizedRobotLife > 0) {
+		// Créer une version rognée de l'image de vie du robot
+		const croppedRobotLifeImage = createGraphics(
+			robotCroppedWidth,
+			lifeRobotImg.height * 0.3,
+		);
 
-	// MODIFICATION ICI : rogner depuis la droite
-	const sourceStartX = lifeRobotImg.width * (1 - robotLifeRatio); // commencer depuis la droite
-	croppedRobotLifeImage.image(
-		lifeRobotImg,
-		0,
-		0,
-		robotCroppedWidth,
-		lifeRobotImg.height * 0.3, // destination
-		sourceStartX, // commencer depuis la droite de l'image source
-		0,
-		lifeRobotImg.width * robotLifeRatio, // largeur à prendre
-		lifeRobotImg.height, // source rognée
-	);
+		// MODIFICATION ICI : rogner depuis la droite
+		const sourceStartX = lifeRobotImg.width * (1 - robotLifeRatio); // commencer depuis la droite
+		croppedRobotLifeImage.image(
+			lifeRobotImg,
+			0,
+			0,
+			robotCroppedWidth,
+			lifeRobotImg.height * 0.3, // destination
+			sourceStartX, // commencer depuis la droite de l'image source
+			0,
+			lifeRobotImg.width * robotLifeRatio, // largeur à prendre
+			lifeRobotImg.height, // source rognée
+		);
 
-	// Position de la barre de vie (alignée à droite)
-	const robotLifeX =
-		width - 20 - heartImg.width * 0.3 - robotCroppedWidth - 10 + 32;
+		// Position de la barre de vie (alignée à droite)
+		const robotLifeX =
+			width - 20 - heartImg.width * 0.3 - robotCroppedWidth - 10 + 32;
 
-	// Afficher l'image rognée
-	image(croppedRobotLifeImage, robotLifeX + 2, 17 + 8 + 2);
+		// Afficher l'image rognée
+		image(croppedRobotLifeImage, robotLifeX + 2, 17 + 8 + 2);
+	}
 
-	// Afficher le contour par-dessus
+	// Afficher le contour par-dessus (toujours visible)
 	image(
 		lifeStrokeImg,
 		width - 20 - heartImg.width * 0.3 - robotFullWidth - 10 + 32, // position fixe du contour
