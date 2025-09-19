@@ -985,16 +985,25 @@ function drawTresholdIndicator() {
 	rect(-10, TRESHOLD.squat, 30, 1);
 	rect(width - 20, TRESHOLD.catch, 30, 1);
 
-	// Add texts
+	// Add rectangle over textes
+	stroke(INDICATOR.color);
+	strokeWeight(2);
 	noStroke();
 	fill(INDICATOR.color);
+	rect(24, TRESHOLD.jump - 8, 48, 20);
+	rect(24, TRESHOLD.squat - 8, 62, 20);
+	rect(width - 88, TRESHOLD.catch - 8, 64, 20);
 
+	// Add texts
+	noStroke();
+	fill("white");
 	textAlign(LEFT, CENTER);
 	textSize(16);
-	text("JUMP", 24, TRESHOLD.jump + 4);
-	text("SQUAT", 24, TRESHOLD.squat + 4);
+	text("JUMP", 28, TRESHOLD.jump + 4);
+	text("SQUAT", 28, TRESHOLD.squat + 4);
 	textAlign(RIGHT, CENTER);
-	text("CATCH", width - 24, TRESHOLD.catch + 4);
+	text("CATCH", width - 28, TRESHOLD.catch + 4);
+
 	camera.on();
 }
 
